@@ -762,10 +762,23 @@
       } else {
         syncChatTasks();
       }
-    }, 60000);
+    }, 30000);
 
     render();
     syncChatTasks();
+
+    function refreshFromChatWhenAppReturns() {
+      syncChatTasks();
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistration().then(registration => registration?.update()).catch(() => {});
+      }
+    }
+
+    window.addEventListener("pageshow", refreshFromChatWhenAppReturns);
+    window.addEventListener("focus", refreshFromChatWhenAppReturns);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refreshFromChatWhenAppReturns();
+    });
 
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
