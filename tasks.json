@@ -1,7 +1,13 @@
 {
   "weekStart": "2026-10-12",
   "days": {
-    "monday": [],
+    "monday": [
+      {
+        "id": "chat-2026-10-12-monday-1800-gym",
+        "time": "18:00",
+        "text": "Gym"
+      }
+    ],
     "tuesday": [],
     "wednesday": [],
     "thursday": [],
