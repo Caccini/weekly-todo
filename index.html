@@ -780,6 +780,17 @@
       if (document.visibilityState === "visible") refreshFromChatWhenAppReturns();
     });
 
+    let pullStartY = null;
+    window.addEventListener("touchstart", event => {
+      if (window.scrollY <= 0) pullStartY = event.touches[0]?.clientY ?? null;
+    }, { passive: true });
+    window.addEventListener("touchend", event => {
+      const endY = event.changedTouches[0]?.clientY ?? null;
+      const pulledFarEnough = pullStartY !== null && endY !== null && endY - pullStartY > 70;
+      pullStartY = null;
+      if (pulledFarEnough && window.scrollY <= 0) syncChatTasks();
+    }, { passive: true });
+
     if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
