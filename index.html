@@ -417,7 +417,7 @@
 
   <script>
     const STORAGE_KEY = "weekly-todo-v1";
-    const REMOTE_TASKS_URL = "./tasks.json";
+    const REMOTE_TASKS_URL = "https://raw.githubusercontent.com/Caccini/weekly-todo/main/tasks.json";
     const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
     const commonTasks = [
@@ -762,7 +762,7 @@
       } else {
         syncChatTasks();
       }
-    }, 30000);
+    }, 5000);
 
     render();
     syncChatTasks();
