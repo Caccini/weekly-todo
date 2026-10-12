@@ -6,6 +6,11 @@
         "id": "chat-2026-10-12-monday-1800-gym",
         "time": "18:00",
         "text": "Gym"
+      },
+      {
+        "id": "chat-2026-10-12-monday-1900-work",
+        "time": "19:00",
+        "text": "Work"
       }
     ],
     "tuesday": [],
