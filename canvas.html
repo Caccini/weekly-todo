@@ -139,6 +139,11 @@
       border-color: var(--ink);
     }
 
+    .image-item.is-held {
+      border-color: var(--ink);
+      cursor: grabbing;
+    }
+
     .image-item img {
       display: block;
       width: 100%;
@@ -254,12 +259,6 @@
       align-items: center;
     }
 
-    .mode-toggle {
-      display: flex;
-      align-items: center;
-      border-right: 1px solid var(--line);
-    }
-
     .tools button,
     .tools .button {
       border-right: 1px solid var(--line);
@@ -267,7 +266,7 @@
       font-weight: 600;
     }
 
-    .mode-toggle > :first-child {
+    .tools-content > :first-child {
       border-radius: 999px 0 0 999px;
     }
 
@@ -279,6 +278,37 @@
     .tools .is-active {
       background: var(--ink);
       color: var(--paper);
+    }
+
+    .tools .icon-button,
+    .tools .button.icon-button {
+      display: inline-grid;
+      width: 50px;
+      min-width: 50px;
+      height: 46px;
+      min-height: 46px;
+      padding: 0;
+      place-items: center;
+      line-height: 1;
+    }
+
+    .tool-icon {
+      display: block;
+      width: 21px;
+      height: 21px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      pointer-events: none;
+    }
+
+    .plus-icon {
+      font-size: 28px;
+      font-weight: 350;
+      line-height: 1;
+      transform: translateY(-1px);
     }
 
     .upload input {
@@ -424,17 +454,9 @@
       }
       .tools-content {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(4, 1fr);
         gap: 8px;
         padding: 8px 12px 12px;
-      }
-      .mode-toggle {
-        grid-column: 1 / -1;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        border: 1px solid var(--line);
-        border-radius: 10px;
-        overflow: hidden;
       }
       .tools button,
       .tools .button {
@@ -446,8 +468,11 @@
         border: 1px solid var(--line);
         border-radius: 9px;
       }
-      .mode-toggle button { border: 0; border-radius: 0; }
-      .mode-toggle button + button { border-left: 1px solid var(--line); }
+      .tools .icon-button,
+      .tools .button.icon-button {
+        width: 100%;
+        min-width: 0;
+      }
       .empty-hint { font-size: 14px; }
     }
   </style>
@@ -458,7 +483,7 @@
       <svg class="ink-layer" id="inkLayer" aria-hidden="true"></svg>
       <div class="items-layer" id="itemsLayer"></div>
     </div>
-    <p class="empty-hint" id="emptyHint">Add images, drag files onto the canvas, or start writing with your Apple Pencil.</p>
+    <p class="empty-hint" id="emptyHint">Add images, draw with your Apple Pencil, or touch and hold an image to move it.</p>
   </main>
 
   <div class="topbar">
@@ -479,15 +504,23 @@
       <button id="closeTools" type="button" aria-label="Close canvas tools">&times;</button>
     </div>
     <div class="tools-content" role="toolbar" aria-label="Moodboard tools">
-      <div class="mode-toggle" role="group" aria-label="Canvas mode">
-        <button class="is-active" id="moveTool" type="button" aria-pressed="true" data-tooltip="Pan canvas and move images">Move</button>
-        <button id="penTool" type="button" aria-pressed="false" data-tooltip="Draw with Pencil or touch">Pen</button>
-      </div>
-      <label class="button upload" for="imageInput" data-tooltip="Upload one or more images">
-        Add images
+      <button class="icon-button" id="penTool" type="button" aria-label="Pen tool" aria-pressed="false" data-tooltip="Pen tool">
+        <svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3 19 10l-5 11h-4L5 10l7-7Z"></path>
+          <path d="M12 3v9"></path>
+          <circle cx="12" cy="14.5" r="1.5"></circle>
+        </svg>
+      </button>
+      <label class="button icon-button upload" for="imageInput" aria-label="Add images" data-tooltip="Add images">
+        <span class="plus-icon" aria-hidden="true">+</span>
         <input id="imageInput" type="file" accept="image/*" multiple>
       </label>
-      <button id="undoButton" type="button" data-tooltip="Undo last canvas change" disabled>Undo</button>
+      <button class="icon-button" id="undoButton" type="button" aria-label="Undo" data-tooltip="Undo" disabled>
+        <svg class="tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m9 7-4 4 4 4"></path>
+          <path d="M5 11h8a6 6 0 0 1 6 6v1"></path>
+        </svg>
+      </button>
       <button id="deleteButton" type="button" data-tooltip="Delete selected image" disabled>Delete</button>
     </div>
   </div>
@@ -511,7 +544,6 @@
     const inkLayer = document.getElementById("inkLayer");
     const itemsLayer = document.getElementById("itemsLayer");
     const zoomOutput = document.getElementById("zoomOutput");
-    const moveTool = document.getElementById("moveTool");
     const penTool = document.getElementById("penTool");
     const imageInput = document.getElementById("imageInput");
     const undoButton = document.getElementById("undoButton");
@@ -693,14 +725,12 @@
 
     function setMode(nextMode) {
       mode = nextMode;
-      moveTool.classList.toggle("is-active", mode === "move");
       penTool.classList.toggle("is-active", mode === "pen");
-      moveTool.setAttribute("aria-pressed", String(mode === "move"));
       penTool.setAttribute("aria-pressed", String(mode === "pen"));
       viewport.classList.toggle("is-drawing", mode === "pen");
       selectedImageId = null;
       renderImages();
-      showStatus(mode === "pen" ? "Pen mode on" : "Move mode on");
+      showStatus(mode === "pen" ? "Pen mode on" : "Pen mode off");
     }
 
     function zoomAt(nextScale, x = window.innerWidth / 2, y = window.innerHeight / 2) {
@@ -801,7 +831,7 @@
     }
 
     function startImageMove(event) {
-      if (mode !== "move" || event.pointerType === "pen" || event.target.classList.contains("resize-handle")) return;
+      if (event.pointerType === "pen" || event.target.classList.contains("resize-handle")) return;
       event.preventDefault();
       event.stopPropagation();
       const element = event.currentTarget;
@@ -814,14 +844,38 @@
       activeElement.setPointerCapture(event.pointerId);
       const start = { x: event.clientX, y: event.clientY };
       const before = { x: image.x, y: image.y, width: image.width, height: image.height };
+      let moving = event.pointerType === "mouse";
+      let holdTimer = null;
+
+      const enableMove = () => {
+        moving = true;
+        activeElement.classList.add("is-held");
+        if (event.pointerType === "touch") showStatus("Move enabled");
+      };
+
+      if (moving) {
+        enableMove();
+      } else {
+        holdTimer = setTimeout(enableMove, 260);
+      }
 
       function move(moveEvent) {
+        if (!moving) {
+          const distance = Math.hypot(moveEvent.clientX - start.x, moveEvent.clientY - start.y);
+          if (distance > 10) {
+            clearTimeout(holdTimer);
+            holdTimer = null;
+          }
+          return;
+        }
         image.x = before.x + (moveEvent.clientX - start.x) / scale;
         image.y = before.y + (moveEvent.clientY - start.y) / scale;
         activeElement.style.transform = `translate(${image.x}px, ${image.y}px)`;
       }
 
       async function finish() {
+        clearTimeout(holdTimer);
+        activeElement.classList.remove("is-held");
         activeElement.removeEventListener("pointermove", move);
         activeElement.removeEventListener("pointerup", finish);
         activeElement.removeEventListener("pointercancel", finish);
@@ -837,7 +891,6 @@
     }
 
     function startImageResize(event) {
-      if (mode !== "move") return;
       event.preventDefault();
       event.stopPropagation();
       const itemElement = event.currentTarget.parentElement;
@@ -927,6 +980,8 @@
     }
 
     viewport.addEventListener("pointerdown", event => {
+      if (event.target.closest(".image-item") && event.pointerType !== "pen") return;
+
       if (shouldDraw(event)) {
         event.preventDefault();
         event.stopPropagation();
@@ -1021,8 +1076,7 @@
     });
 
     imageInput.addEventListener("change", () => addImageFiles(imageInput.files));
-    moveTool.addEventListener("click", () => setMode("move"));
-    penTool.addEventListener("click", () => setMode("pen"));
+    penTool.addEventListener("click", () => setMode(mode === "pen" ? "move" : "pen"));
     undoButton.addEventListener("click", undo);
     deleteButton.addEventListener("click", requestDeleteSelectedImage);
     document.getElementById("zoomIn").addEventListener("click", () => zoomAt(scale * 1.2));
