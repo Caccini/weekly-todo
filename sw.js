@@ -1,10 +1,12 @@
-const CACHE_NAME = "weekly-todo-v8";
+const CACHE_NAME = "weekly-todo-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./canvas.html",
   "./manifest.webmanifest",
-  "./icon.svg"
+  "./apple-touch-icon.png",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", event => {
