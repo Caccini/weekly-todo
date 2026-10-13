@@ -6,13 +6,13 @@
   <meta name="theme-color" content="#ffffff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <title>Canvas</title>
+  <title>Moodboard Canvas</title>
   <style>
     :root {
       color-scheme: light;
       --ink: #111111;
       --paper: #ffffff;
-      --line: #d9d9d9;
+      --line: #d8d8d8;
       --muted: #666666;
     }
 
@@ -32,21 +32,140 @@
     }
 
     button,
-    a { font: inherit; }
+    a,
+    label { font: inherit; }
 
-    #canvas {
+    button,
+    .button {
+      min-height: 44px;
+      padding: 0 15px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    button:disabled {
+      color: #aaaaaa;
+      cursor: default;
+    }
+
+    button:focus-visible,
+    a:focus-visible,
+    label:focus-within {
+      outline: 3px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .viewport {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background-color: var(--paper);
+      background-image: radial-gradient(circle, #d2d2d2 1.1px, transparent 1.2px);
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .viewport.is-panning { cursor: grabbing; }
+    .viewport.is-drawing { cursor: crosshair; }
+    .viewport.is-dropping::after {
+      content: "Drop images here";
+      position: fixed;
+      inset: 18px;
+      display: grid;
+      place-items: center;
+      border: 2px dashed var(--ink);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .86);
+      font-size: 20px;
+      font-weight: 700;
+      pointer-events: none;
+      z-index: 6;
+    }
+
+    .world {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 0;
+      height: 0;
+      transform-origin: 0 0;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    .ink-layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 1px;
+      height: 1px;
+      overflow: visible;
+      pointer-events: none;
+    }
+
+    .ink-layer path {
+      fill: none;
+      stroke: var(--ink);
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .items-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .image-item {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border: 2px solid transparent;
+      border-radius: 4px;
+      background: var(--paper);
+      box-shadow: 0 5px 22px rgba(0, 0, 0, .12);
+      pointer-events: auto;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .image-item.is-selected {
+      border-color: var(--ink);
+    }
+
+    .image-item img {
       display: block;
       width: 100%;
       height: 100%;
-      cursor: grab;
-      touch-action: none;
+      border-radius: 2px;
+      object-fit: contain;
+      pointer-events: none;
+      -webkit-user-drag: none;
     }
 
-    #canvas.is-dragging { cursor: grabbing; }
+    .resize-handle {
+      position: absolute;
+      right: -12px;
+      bottom: -12px;
+      display: none;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: var(--paper);
+      cursor: nwse-resize;
+      pointer-events: auto;
+    }
+
+    .image-item.is-selected .resize-handle { display: block; }
 
     .topbar {
       position: fixed;
-      z-index: 2;
+      z-index: 8;
       top: max(14px, env(safe-area-inset-top));
       left: max(14px, env(safe-area-inset-left));
       right: max(14px, env(safe-area-inset-right));
@@ -61,7 +180,7 @@
       min-height: 44px;
       border: 1px solid var(--ink);
       border-radius: 999px;
-      background: rgba(255, 255, 255, .94);
+      background: rgba(255, 255, 255, .96);
       color: var(--ink);
       box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
       pointer-events: auto;
@@ -78,16 +197,13 @@
 
     .back:hover,
     .back:focus-visible,
-    .zoom button:hover,
-    .zoom button:focus-visible {
+    .zoom button:hover:not(:disabled),
+    .zoom button:focus-visible,
+    .tools button:hover:not(:disabled),
+    .tools button:focus-visible,
+    .tools .button:hover {
       background: var(--ink);
       color: var(--paper);
-    }
-
-    .back:focus-visible,
-    .zoom button:focus-visible {
-      outline: 3px solid var(--ink);
-      outline-offset: 2px;
     }
 
     .zoom {
@@ -100,44 +216,118 @@
       width: 44px;
       height: 42px;
       padding: 0;
-      border: 0;
-      background: transparent;
-      color: inherit;
       font-size: 21px;
-      cursor: pointer;
     }
 
     .zoom-output {
-      min-width: 60px;
+      min-width: 58px;
       color: var(--muted);
       font-size: 13px;
       font-variant-numeric: tabular-nums;
       text-align: center;
     }
 
-    .hint {
+    .tools {
       position: fixed;
-      z-index: 2;
+      z-index: 8;
       left: 50%;
-      bottom: max(18px, env(safe-area-inset-bottom));
+      bottom: max(16px, env(safe-area-inset-bottom));
+      display: flex;
+      align-items: center;
+      max-width: calc(100% - 24px);
+      overflow-x: auto;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+
+    .tools::-webkit-scrollbar { display: none; }
+
+    .tools button,
+    .tools .button {
+      border-right: 1px solid var(--line);
+      border-radius: 0;
+      font-weight: 600;
+    }
+
+    .tools > :first-child {
+      border-radius: 999px 0 0 999px;
+    }
+
+    .tools > :last-child {
+      border-right: 0;
+      border-radius: 0 999px 999px 0;
+    }
+
+    .tools .is-active {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .upload input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .empty-hint {
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      top: 50%;
+      max-width: min(420px, calc(100% - 48px));
+      transform: translate(-50%, -50%);
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .empty-hint[hidden] { display: none; }
+
+    .status {
+      position: fixed;
+      z-index: 9;
+      left: 50%;
+      top: max(72px, calc(env(safe-area-inset-top) + 58px));
       transform: translateX(-50%);
       margin: 0;
-      padding: 9px 14px;
+      padding: 8px 12px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(255, 255, 255, .92);
+      background: rgba(255, 255, 255, .96);
       color: var(--muted);
       font-size: 13px;
-      white-space: nowrap;
+      opacity: 0;
       pointer-events: none;
+      transition: opacity 150ms ease;
+    }
+
+    .status.is-visible { opacity: 1; }
+
+    @media (max-width: 620px) {
+      .back { padding: 0 14px; }
+      .tools { bottom: max(10px, env(safe-area-inset-bottom)); }
+      .tools button,
+      .tools .button { padding: 0 13px; }
+      .empty-hint { font-size: 14px; }
     }
   </style>
 </head>
 <body>
-  <canvas id="canvas" aria-label="Infinite canvas. Drag to move and pinch or scroll to zoom."></canvas>
+  <main class="viewport" id="viewport" aria-label="Infinite moodboard canvas">
+    <div class="world" id="world">
+      <svg class="ink-layer" id="inkLayer" aria-hidden="true"></svg>
+      <div class="items-layer" id="itemsLayer"></div>
+    </div>
+    <p class="empty-hint" id="emptyHint">Add images, drag files onto the canvas, or start writing with your Apple Pencil.</p>
+  </main>
 
   <div class="topbar">
-    <a class="pill back" href="./index.html" aria-label="Back to daily to-do">← Back</a>
+    <a class="pill back" href="./index.html" aria-label="Back to daily to-do">← To-do</a>
     <div class="pill zoom" aria-label="Canvas zoom controls">
       <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
       <span class="zoom-output" id="zoomOutput">100%</span>
@@ -145,132 +335,545 @@
     </div>
   </div>
 
-  <p class="hint">Drag to move · Pinch or scroll to zoom</p>
+  <div class="pill tools" role="toolbar" aria-label="Moodboard tools">
+    <button class="is-active" id="moveTool" type="button" aria-pressed="true">Move</button>
+    <button id="penTool" type="button" aria-pressed="false">Pen</button>
+    <label class="button upload" for="imageInput">
+      Add images
+      <input id="imageInput" type="file" accept="image/*" multiple>
+    </label>
+    <button id="undoButton" type="button" disabled>Undo</button>
+    <button id="deleteButton" type="button" disabled>Delete</button>
+  </div>
+
+  <p class="status" id="status" aria-live="polite"></p>
 
   <script>
-    const canvas = document.getElementById("canvas");
-    const context = canvas.getContext("2d");
+    const viewport = document.getElementById("viewport");
+    const world = document.getElementById("world");
+    const inkLayer = document.getElementById("inkLayer");
+    const itemsLayer = document.getElementById("itemsLayer");
     const zoomOutput = document.getElementById("zoomOutput");
-    const pointers = new Map();
+    const moveTool = document.getElementById("moveTool");
+    const penTool = document.getElementById("penTool");
+    const imageInput = document.getElementById("imageInput");
+    const undoButton = document.getElementById("undoButton");
+    const deleteButton = document.getElementById("deleteButton");
+    const emptyHint = document.getElementById("emptyHint");
+    const status = document.getElementById("status");
 
-    let width = 0;
-    let height = 0;
-    let pixelRatio = 1;
+    const DB_NAME = "weekly-todo-moodboard";
+    const STORE_NAME = "boards";
+    const BOARD_KEY = "main";
+    const GRID_SIZE = 32;
+    const MIN_SCALE = .2;
+    const MAX_SCALE = 4;
+
     let scale = 1;
-    let offsetX = 0;
-    let offsetY = 0;
-    let lastPoint = null;
-    let pinchDistance = null;
+    let offsetX = window.innerWidth / 2;
+    let offsetY = window.innerHeight / 2;
+    let mode = "move";
+    let images = [];
+    let strokes = [];
+    let selectedImageId = null;
+    let activeStroke = null;
+    let statusTimer = null;
+    let databasePromise = null;
+    const pointers = new Map();
+    const history = [];
+    let panStart = null;
+    let pinchStart = null;
 
-    function resize() {
-      width = window.innerWidth;
-      height = window.innerHeight;
-      pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(width * pixelRatio);
-      canvas.height = Math.round(height * pixelRatio);
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${height}px`;
-      draw();
+    function uid(prefix) {
+      return prefix + "-" + Date.now() + "-" + Math.random().toString(36).slice(2);
     }
 
-    function draw() {
-      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-      context.clearRect(0, 0, width, height);
-      context.fillStyle = "#ffffff";
-      context.fillRect(0, 0, width, height);
+    function openDatabase() {
+      if (databasePromise) return databasePromise;
+      databasePromise = new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, 1);
+        request.onupgradeneeded = () => {
+          const db = request.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) db.createObjectStore(STORE_NAME, { keyPath: "id" });
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+      return databasePromise;
+    }
 
-      const step = 32 * scale;
-      const dotRadius = Math.max(.8, 1.15 * scale);
-      const startX = ((offsetX % step) + step) % step;
-      const startY = ((offsetY % step) + step) % step;
-
-      context.fillStyle = "#d8d8d8";
-      for (let x = startX; x < width; x += step) {
-        for (let y = startY; y < height; y += step) {
-          context.beginPath();
-          context.arc(x, y, dotRadius, 0, Math.PI * 2);
-          context.fill();
-        }
+    async function saveBoard() {
+      try {
+        const db = await openDatabase();
+        const transaction = db.transaction(STORE_NAME, "readwrite");
+        transaction.objectStore(STORE_NAME).put({
+          id: BOARD_KEY,
+          images,
+          strokes
+        });
+      } catch (_) {
+        showStatus("Could not save on this device");
       }
-
-      zoomOutput.textContent = `${Math.round(scale * 100)}%`;
     }
 
-    function zoomAt(nextScale, x = width / 2, y = height / 2) {
-      const bounded = Math.min(4, Math.max(.2, nextScale));
-      const ratio = bounded / scale;
-      offsetX = x - (x - offsetX) * ratio;
-      offsetY = y - (y - offsetY) * ratio;
+    async function loadBoard() {
+      try {
+        const db = await openDatabase();
+        const transaction = db.transaction(STORE_NAME, "readonly");
+        const request = transaction.objectStore(STORE_NAME).get(BOARD_KEY);
+        const board = await new Promise((resolve, reject) => {
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        if (board) {
+          images = Array.isArray(board.images) ? board.images : [];
+          strokes = Array.isArray(board.strokes) ? board.strokes : [];
+        }
+      } catch (_) {
+        showStatus("Could not load the saved moodboard");
+      }
+      renderAll();
+    }
+
+    function showStatus(message) {
+      clearTimeout(statusTimer);
+      status.textContent = message;
+      status.classList.add("is-visible");
+      statusTimer = setTimeout(() => status.classList.remove("is-visible"), 1800);
+    }
+
+    function screenToWorld(x, y) {
+      return {
+        x: (x - offsetX) / scale,
+        y: (y - offsetY) / scale
+      };
+    }
+
+    function renderView() {
+      world.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0) scale(${scale})`;
+      viewport.style.backgroundSize = `${GRID_SIZE * scale}px ${GRID_SIZE * scale}px`;
+      viewport.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+      zoomOutput.textContent = Math.round(scale * 100) + "%";
+    }
+
+    function renderStrokes() {
+      inkLayer.replaceChildren();
+      strokes.forEach(stroke => {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.dataset.id = stroke.id;
+        path.setAttribute("d", pathFromPoints(stroke.points));
+        path.setAttribute("stroke-width", String(stroke.width || 3.5));
+        inkLayer.appendChild(path);
+      });
+    }
+
+    function pathFromPoints(points) {
+      if (!points || !points.length) return "";
+      if (points.length === 1) {
+        const point = points[0];
+        return `M ${point.x} ${point.y} l .01 .01`;
+      }
+      let path = `M ${points[0].x} ${points[0].y}`;
+      for (let index = 1; index < points.length - 1; index += 1) {
+        const point = points[index];
+        const next = points[index + 1];
+        path += ` Q ${point.x} ${point.y} ${(point.x + next.x) / 2} ${(point.y + next.y) / 2}`;
+      }
+      const last = points[points.length - 1];
+      return path + ` L ${last.x} ${last.y}`;
+    }
+
+    function renderImages() {
+      itemsLayer.replaceChildren();
+      images.forEach(image => {
+        const item = document.createElement("div");
+        item.className = "image-item" + (image.id === selectedImageId ? " is-selected" : "");
+        item.dataset.id = image.id;
+        item.tabIndex = 0;
+        item.setAttribute("role", "button");
+        item.setAttribute("aria-label", "Moodboard image. Drag to move.");
+        item.style.transform = `translate(${image.x}px, ${image.y}px)`;
+        item.style.width = image.width + "px";
+        item.style.height = image.height + "px";
+
+        const element = document.createElement("img");
+        element.src = image.src;
+        element.alt = image.name || "Moodboard image";
+        element.draggable = false;
+
+        const handle = document.createElement("span");
+        handle.className = "resize-handle";
+        handle.setAttribute("aria-hidden", "true");
+
+        item.append(element, handle);
+        item.addEventListener("pointerdown", startImageMove);
+        handle.addEventListener("pointerdown", startImageResize);
+        item.addEventListener("keydown", event => {
+          if (event.key === "Delete" || event.key === "Backspace") deleteSelectedImage();
+        });
+        itemsLayer.appendChild(item);
+      });
+      deleteButton.disabled = !selectedImageId;
+      emptyHint.hidden = images.length > 0 || strokes.length > 0;
+    }
+
+    function renderAll() {
+      renderView();
+      renderStrokes();
+      renderImages();
+      undoButton.disabled = history.length === 0;
+    }
+
+    function setMode(nextMode) {
+      mode = nextMode;
+      moveTool.classList.toggle("is-active", mode === "move");
+      penTool.classList.toggle("is-active", mode === "pen");
+      moveTool.setAttribute("aria-pressed", String(mode === "move"));
+      penTool.setAttribute("aria-pressed", String(mode === "pen"));
+      viewport.classList.toggle("is-drawing", mode === "pen");
+      selectedImageId = null;
+      renderImages();
+    }
+
+    function zoomAt(nextScale, x = window.innerWidth / 2, y = window.innerHeight / 2) {
+      const bounded = Math.min(MAX_SCALE, Math.max(MIN_SCALE, nextScale));
+      const worldPoint = screenToWorld(x, y);
       scale = bounded;
-      draw();
+      offsetX = x - worldPoint.x * scale;
+      offsetY = y - worldPoint.y * scale;
+      renderView();
     }
 
-    function distanceBetween(points) {
-      const [first, second] = points;
-      return Math.hypot(second.x - first.x, second.y - first.y);
+    function pushHistory(action) {
+      history.push(action);
+      if (history.length > 40) history.shift();
+      undoButton.disabled = false;
     }
 
-    function midpoint(points) {
-      const [first, second] = points;
-      return { x: (first.x + second.x) / 2, y: (first.y + second.y) / 2 };
+    async function undo() {
+      const action = history.pop();
+      if (!action) return;
+      if (action.type === "add-images") {
+        images = images.filter(image => !action.ids.includes(image.id));
+        if (action.ids.includes(selectedImageId)) selectedImageId = null;
+      } else if (action.type === "stroke") {
+        strokes = strokes.filter(stroke => stroke.id !== action.id);
+      } else if (action.type === "image-change") {
+        const image = images.find(candidate => candidate.id === action.id);
+        if (image) Object.assign(image, action.before);
+      } else if (action.type === "delete-image") {
+        images.push(action.image);
+      }
+      await saveBoard();
+      renderAll();
     }
 
-    canvas.addEventListener("pointerdown", event => {
-      canvas.setPointerCapture(event.pointerId);
-      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
-      lastPoint = { x: event.clientX, y: event.clientY };
-      canvas.classList.add("is-dragging");
-      if (pointers.size === 2) pinchDistance = distanceBetween([...pointers.values()]);
-    });
+    function dataUrlForFile(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
 
-    canvas.addEventListener("pointermove", event => {
-      if (!pointers.has(event.pointerId)) return;
-      const previous = pointers.get(event.pointerId);
-      const current = { x: event.clientX, y: event.clientY };
-      pointers.set(event.pointerId, current);
+    function dimensionsForSource(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+        image.onerror = reject;
+        image.src = src;
+      });
+    }
 
-      if (pointers.size === 1 && lastPoint) {
-        offsetX += current.x - lastPoint.x;
-        offsetY += current.y - lastPoint.y;
-        lastPoint = current;
-        draw();
+    async function addImageFiles(files, screenPoint = null) {
+      const validFiles = [...files].filter(file => file.type && file.type.startsWith("image/"));
+      if (!validFiles.length) {
+        showStatus("Choose image files");
         return;
       }
 
-      if (pointers.size === 2) {
+      const center = screenPoint || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+      const worldCenter = screenToWorld(center.x, center.y);
+      const addedIds = [];
+
+      for (let index = 0; index < validFiles.length; index += 1) {
+        try {
+          const file = validFiles[index];
+          const src = await dataUrlForFile(file);
+          const natural = await dimensionsForSource(src);
+          const width = Math.min(360, Math.max(140, natural.width));
+          const height = width * (natural.height / natural.width);
+          const item = {
+            id: uid("image"),
+            name: file.name,
+            src,
+            x: worldCenter.x - width / 2 + index * 28,
+            y: worldCenter.y - height / 2 + index * 28,
+            width,
+            height,
+            aspect: natural.width / natural.height
+          };
+          images.push(item);
+          addedIds.push(item.id);
+          selectedImageId = item.id;
+        } catch (_) {
+          showStatus("One image could not be added");
+        }
+      }
+
+      if (addedIds.length) {
+        pushHistory({ type: "add-images", ids: addedIds });
+        await saveBoard();
+        renderAll();
+        showStatus(addedIds.length === 1 ? "Image added" : addedIds.length + " images added");
+      }
+      imageInput.value = "";
+    }
+
+    function startImageMove(event) {
+      if (mode !== "move" || event.pointerType === "pen" || event.target.classList.contains("resize-handle")) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const element = event.currentTarget;
+      const id = element.dataset.id;
+      const image = images.find(candidate => candidate.id === id);
+      if (!image) return;
+      selectedImageId = id;
+      renderImages();
+      const activeElement = itemsLayer.querySelector(`[data-id="${id}"]`);
+      activeElement.setPointerCapture(event.pointerId);
+      const start = { x: event.clientX, y: event.clientY };
+      const before = { x: image.x, y: image.y, width: image.width, height: image.height };
+
+      function move(moveEvent) {
+        image.x = before.x + (moveEvent.clientX - start.x) / scale;
+        image.y = before.y + (moveEvent.clientY - start.y) / scale;
+        activeElement.style.transform = `translate(${image.x}px, ${image.y}px)`;
+      }
+
+      async function finish() {
+        activeElement.removeEventListener("pointermove", move);
+        activeElement.removeEventListener("pointerup", finish);
+        activeElement.removeEventListener("pointercancel", finish);
+        if (image.x !== before.x || image.y !== before.y) {
+          pushHistory({ type: "image-change", id, before });
+          await saveBoard();
+        }
+      }
+
+      activeElement.addEventListener("pointermove", move);
+      activeElement.addEventListener("pointerup", finish);
+      activeElement.addEventListener("pointercancel", finish);
+    }
+
+    function startImageResize(event) {
+      if (mode !== "move") return;
+      event.preventDefault();
+      event.stopPropagation();
+      const itemElement = event.currentTarget.parentElement;
+      const id = itemElement.dataset.id;
+      const image = images.find(candidate => candidate.id === id);
+      if (!image) return;
+      const handle = event.currentTarget;
+      handle.setPointerCapture(event.pointerId);
+      const startX = event.clientX;
+      const before = { x: image.x, y: image.y, width: image.width, height: image.height };
+
+      function resize(moveEvent) {
+        image.width = Math.max(80, before.width + (moveEvent.clientX - startX) / scale);
+        image.height = image.width / (image.aspect || before.width / before.height);
+        itemElement.style.width = image.width + "px";
+        itemElement.style.height = image.height + "px";
+      }
+
+      async function finish() {
+        handle.removeEventListener("pointermove", resize);
+        handle.removeEventListener("pointerup", finish);
+        handle.removeEventListener("pointercancel", finish);
+        if (image.width !== before.width) {
+          pushHistory({ type: "image-change", id, before });
+          await saveBoard();
+        }
+      }
+
+      handle.addEventListener("pointermove", resize);
+      handle.addEventListener("pointerup", finish);
+      handle.addEventListener("pointercancel", finish);
+    }
+
+    async function deleteSelectedImage() {
+      if (!selectedImageId) return;
+      const index = images.findIndex(image => image.id === selectedImageId);
+      if (index < 0) return;
+      const [removed] = images.splice(index, 1);
+      pushHistory({ type: "delete-image", image: removed });
+      selectedImageId = null;
+      await saveBoard();
+      renderAll();
+      showStatus("Image deleted");
+    }
+
+    function shouldDraw(event) {
+      return event.pointerType === "pen" || mode === "pen";
+    }
+
+    function beginStroke(event) {
+      const point = screenToWorld(event.clientX, event.clientY);
+      activeStroke = {
+        id: uid("stroke"),
+        pointerId: event.pointerId,
+        points: [point],
+        width: event.pointerType === "pen" && event.pressure ? 2.5 + event.pressure * 3 : 3.5
+      };
+      strokes.push(activeStroke);
+      renderStrokes();
+      viewport.setPointerCapture(event.pointerId);
+    }
+
+    function continueStroke(event) {
+      if (!activeStroke || activeStroke.pointerId !== event.pointerId) return;
+      const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+      events.forEach(pointEvent => {
+        const point = screenToWorld(pointEvent.clientX, pointEvent.clientY);
+        const previous = activeStroke.points[activeStroke.points.length - 1];
+        if (!previous || Math.hypot(point.x - previous.x, point.y - previous.y) > .6) activeStroke.points.push(point);
+      });
+      const path = inkLayer.querySelector(`[data-id="${activeStroke.id}"]`);
+      if (path) path.setAttribute("d", pathFromPoints(activeStroke.points));
+    }
+
+    async function finishStroke(event) {
+      if (!activeStroke || activeStroke.pointerId !== event.pointerId) return;
+      const id = activeStroke.id;
+      activeStroke = null;
+      pushHistory({ type: "stroke", id });
+      await saveBoard();
+      renderAll();
+    }
+
+    viewport.addEventListener("pointerdown", event => {
+      if (shouldDraw(event)) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectedImageId = null;
+        renderImages();
+        beginStroke(event);
+        return;
+      }
+
+      if (event.target.closest(".image-item")) return;
+      selectedImageId = null;
+      renderImages();
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      viewport.setPointerCapture(event.pointerId);
+      viewport.classList.add("is-panning");
+
+      if (pointers.size === 1) {
+        panStart = { x: event.clientX, y: event.clientY };
+      } else if (pointers.size === 2) {
         const points = [...pointers.values()];
-        const nextDistance = distanceBetween(points);
-        const center = midpoint(points);
-        if (pinchDistance) zoomAt(scale * (nextDistance / pinchDistance), center.x, center.y);
-        offsetX += current.x - previous.x;
-        offsetY += current.y - previous.y;
-        pinchDistance = nextDistance;
-        draw();
+        pinchStart = {
+          distance: Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y),
+          scale,
+          centerX: (points[0].x + points[1].x) / 2,
+          centerY: (points[0].y + points[1].y) / 2
+        };
+      }
+    }, { capture: true });
+
+    viewport.addEventListener("pointermove", event => {
+      if (activeStroke) {
+        continueStroke(event);
+        return;
+      }
+      if (!pointers.has(event.pointerId)) return;
+      pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+      if (pointers.size === 1 && panStart) {
+        offsetX += event.clientX - panStart.x;
+        offsetY += event.clientY - panStart.y;
+        panStart = { x: event.clientX, y: event.clientY };
+        renderView();
+      } else if (pointers.size === 2 && pinchStart) {
+        const points = [...pointers.values()];
+        const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+        const centerX = (points[0].x + points[1].x) / 2;
+        const centerY = (points[0].y + points[1].y) / 2;
+        offsetX += centerX - pinchStart.centerX;
+        offsetY += centerY - pinchStart.centerY;
+        zoomAt(pinchStart.scale * (distance / pinchStart.distance), centerX, centerY);
+        pinchStart.centerX = centerX;
+        pinchStart.centerY = centerY;
+        pinchStart.scale = scale;
+        pinchStart.distance = distance;
       }
     });
 
-    function releasePointer(event) {
+    async function releasePointer(event) {
+      if (activeStroke) await finishStroke(event);
       pointers.delete(event.pointerId);
-      if (pointers.size === 1) lastPoint = [...pointers.values()][0];
-      if (pointers.size < 2) pinchDistance = null;
-      if (pointers.size === 0) {
-        lastPoint = null;
-        canvas.classList.remove("is-dragging");
+      if (pointers.size === 1) {
+        const remaining = [...pointers.values()][0];
+        panStart = { x: remaining.x, y: remaining.y };
+        pinchStart = null;
+      } else if (pointers.size === 0) {
+        panStart = null;
+        pinchStart = null;
+        viewport.classList.remove("is-panning");
       }
     }
 
-    canvas.addEventListener("pointerup", releasePointer);
-    canvas.addEventListener("pointercancel", releasePointer);
+    viewport.addEventListener("pointerup", releasePointer);
+    viewport.addEventListener("pointercancel", releasePointer);
 
-    canvas.addEventListener("wheel", event => {
+    viewport.addEventListener("wheel", event => {
       event.preventDefault();
       zoomAt(scale * Math.exp(-event.deltaY * .0015), event.clientX, event.clientY);
     }, { passive: false });
 
+    viewport.addEventListener("dragenter", event => {
+      event.preventDefault();
+      viewport.classList.add("is-dropping");
+    });
+    viewport.addEventListener("dragover", event => event.preventDefault());
+    viewport.addEventListener("dragleave", event => {
+      if (!viewport.contains(event.relatedTarget)) viewport.classList.remove("is-dropping");
+    });
+    viewport.addEventListener("drop", event => {
+      event.preventDefault();
+      viewport.classList.remove("is-dropping");
+      addImageFiles(event.dataTransfer.files, { x: event.clientX, y: event.clientY });
+    });
+
+    imageInput.addEventListener("change", () => addImageFiles(imageInput.files));
+    moveTool.addEventListener("click", () => setMode("move"));
+    penTool.addEventListener("click", () => setMode("pen"));
+    undoButton.addEventListener("click", undo);
+    deleteButton.addEventListener("click", deleteSelectedImage);
     document.getElementById("zoomIn").addEventListener("click", () => zoomAt(scale * 1.2));
     document.getElementById("zoomOut").addEventListener("click", () => zoomAt(scale / 1.2));
-    window.addEventListener("resize", resize);
-    resize();
+
+    window.addEventListener("keydown", event => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        undo();
+      } else if ((event.key === "Delete" || event.key === "Backspace") && selectedImageId) {
+        event.preventDefault();
+        deleteSelectedImage();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (!images.length && !strokes.length) {
+        offsetX = window.innerWidth / 2;
+        offsetY = window.innerHeight / 2;
+      }
+      renderView();
+    });
+
+    renderView();
+    loadBoard();
   </script>
 </body>
 </html>
