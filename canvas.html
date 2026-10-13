@@ -14,6 +14,8 @@
       --paper: #ffffff;
       --line: #d8d8d8;
       --muted: #666666;
+      --soft: #f6f6f6;
+      --danger: #8b1e1e;
     }
 
     * { box-sizing: border-box; }
@@ -227,6 +229,8 @@
       text-align: center;
     }
 
+    .tools-toggle { display: none; }
+
     .tools {
       position: fixed;
       z-index: 8;
@@ -243,6 +247,19 @@
 
     .tools::-webkit-scrollbar { display: none; }
 
+    .tools-sheet-header { display: none; }
+
+    .tools-content {
+      display: flex;
+      align-items: center;
+    }
+
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      border-right: 1px solid var(--line);
+    }
+
     .tools button,
     .tools .button {
       border-right: 1px solid var(--line);
@@ -250,11 +267,11 @@
       font-weight: 600;
     }
 
-    .tools > :first-child {
+    .mode-toggle > :first-child {
       border-radius: 999px 0 0 999px;
     }
 
-    .tools > :last-child {
+    .tools-content > :last-child {
       border-right: 0;
       border-radius: 0 999px 999px 0;
     }
@@ -308,11 +325,129 @@
 
     .status.is-visible { opacity: 1; }
 
+    .sheet-backdrop {
+      position: fixed;
+      z-index: 7;
+      inset: 0;
+      display: none;
+      background: rgba(0, 0, 0, .28);
+    }
+
+    dialog {
+      width: min(420px, calc(100% - 32px));
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .18);
+    }
+
+    dialog::backdrop { background: rgba(0, 0, 0, .34); }
+
+    .dialog-form { padding: 22px; }
+    .dialog-form h2 { margin: 0; font-size: 22px; }
+    .dialog-form p { margin: 7px 0 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .dialog-actions button { border: 1px solid var(--line); border-radius: 8px; }
+    .dialog-actions .danger-button { background: var(--danger); border-color: var(--danger); color: var(--paper); }
+
+    [data-tooltip] { position: relative; }
+
+    @media (hover: hover) {
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        z-index: 20;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        width: max-content;
+        max-width: 180px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 12px;
+        line-height: 1.2;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 3px);
+        transition: opacity 120ms ease, transform 120ms ease;
+      }
+
+      [data-tooltip-position="bottom"]::after { top: calc(100% + 8px); bottom: auto; }
+      [data-tooltip]:hover::after,
+      [data-tooltip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+    }
+
     @media (max-width: 620px) {
       .back { padding: 0 14px; }
-      .tools { bottom: max(10px, env(safe-area-inset-bottom)); }
+      .tools-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 650;
+      }
+      .topbar .zoom { display: none; }
+      .tools {
+        left: 12px;
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        display: block;
+        max-width: none;
+        overflow: hidden;
+        border-radius: 18px;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(calc(100% + 34px));
+        transition: opacity 160ms ease, transform 200ms ease;
+      }
+      .tools.is-open {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+      }
+      .sheet-backdrop.is-visible { display: block; }
+      .tools-sheet-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px 14px 8px;
+        font-weight: 700;
+      }
+      .tools-sheet-header button {
+        width: 36px;
+        min-height: 36px;
+        padding: 0;
+        border: 0;
+        border-radius: 8px;
+        color: var(--muted);
+        font-size: 22px;
+      }
+      .tools-content {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 8px 12px 12px;
+      }
+      .mode-toggle {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        overflow: hidden;
+      }
       .tools button,
-      .tools .button { padding: 0 13px; }
+      .tools .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+      }
+      .mode-toggle button { border: 0; border-radius: 0; }
+      .mode-toggle button + button { border-left: 1px solid var(--line); }
       .empty-hint { font-size: 14px; }
     }
   </style>
@@ -329,24 +464,46 @@
   <div class="topbar">
     <a class="pill back" href="./index.html" aria-label="Back to daily to-do">← To-do</a>
     <div class="pill zoom" aria-label="Canvas zoom controls">
-      <button id="zoomOut" type="button" aria-label="Zoom out">−</button>
+      <button id="zoomOut" type="button" aria-label="Zoom out" data-tooltip="Zoom out" data-tooltip-position="bottom">−</button>
       <span class="zoom-output" id="zoomOutput">100%</span>
-      <button id="zoomIn" type="button" aria-label="Zoom in">+</button>
+      <button id="zoomIn" type="button" aria-label="Zoom in" data-tooltip="Zoom in" data-tooltip-position="bottom">+</button>
+    </div>
+    <button class="pill tools-toggle" id="toolsToggle" type="button" aria-controls="toolsPanel" aria-expanded="false">Tools</button>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+
+  <div class="pill tools" id="toolsPanel" aria-label="Moodboard tools">
+    <div class="tools-sheet-header">
+      <span>Canvas tools</span>
+      <button id="closeTools" type="button" aria-label="Close canvas tools">&times;</button>
+    </div>
+    <div class="tools-content" role="toolbar" aria-label="Moodboard tools">
+      <div class="mode-toggle" role="group" aria-label="Canvas mode">
+        <button class="is-active" id="moveTool" type="button" aria-pressed="true" data-tooltip="Pan canvas and move images">Move</button>
+        <button id="penTool" type="button" aria-pressed="false" data-tooltip="Draw with Pencil or touch">Pen</button>
+      </div>
+      <label class="button upload" for="imageInput" data-tooltip="Upload one or more images">
+        Add images
+        <input id="imageInput" type="file" accept="image/*" multiple>
+      </label>
+      <button id="undoButton" type="button" data-tooltip="Undo last canvas change" disabled>Undo</button>
+      <button id="deleteButton" type="button" data-tooltip="Delete selected image" disabled>Delete</button>
     </div>
   </div>
 
-  <div class="pill tools" role="toolbar" aria-label="Moodboard tools">
-    <button class="is-active" id="moveTool" type="button" aria-pressed="true">Move</button>
-    <button id="penTool" type="button" aria-pressed="false">Pen</button>
-    <label class="button upload" for="imageInput">
-      Add images
-      <input id="imageInput" type="file" accept="image/*" multiple>
-    </label>
-    <button id="undoButton" type="button" disabled>Undo</button>
-    <button id="deleteButton" type="button" disabled>Delete</button>
-  </div>
-
   <p class="status" id="status" aria-live="polite"></p>
+
+  <dialog id="deleteImageDialog">
+    <form class="dialog-form" id="deleteImageForm">
+      <h2>Delete this image?</h2>
+      <p>The selected image will be removed from your moodboard. You can still use Undo immediately afterward.</p>
+      <div class="dialog-actions">
+        <button id="cancelImageDelete" type="button">Cancel</button>
+        <button class="danger-button" type="submit">Delete</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
     const viewport = document.getElementById("viewport");
@@ -361,6 +518,10 @@
     const deleteButton = document.getElementById("deleteButton");
     const emptyHint = document.getElementById("emptyHint");
     const status = document.getElementById("status");
+    const toolsPanel = document.getElementById("toolsPanel");
+    const toolsToggle = document.getElementById("toolsToggle");
+    const sheetBackdrop = document.getElementById("sheetBackdrop");
+    const deleteImageDialog = document.getElementById("deleteImageDialog");
 
     const DB_NAME = "weekly-todo-moodboard";
     const STORE_NAME = "boards";
@@ -440,6 +601,12 @@
       status.textContent = message;
       status.classList.add("is-visible");
       statusTimer = setTimeout(() => status.classList.remove("is-visible"), 1800);
+    }
+
+    function setToolsOpen(open) {
+      toolsPanel.classList.toggle("is-open", open);
+      sheetBackdrop.classList.toggle("is-visible", open);
+      toolsToggle.setAttribute("aria-expanded", String(open));
     }
 
     function screenToWorld(x, y) {
@@ -533,6 +700,7 @@
       viewport.classList.toggle("is-drawing", mode === "pen");
       selectedImageId = null;
       renderImages();
+      showStatus(mode === "pen" ? "Pen mode on" : "Move mode on");
     }
 
     function zoomAt(nextScale, x = window.innerWidth / 2, y = window.innerHeight / 2) {
@@ -566,6 +734,7 @@
       }
       await saveBoard();
       renderAll();
+      showStatus("Last change undone");
     }
 
     function dataUrlForFile(file) {
@@ -714,6 +883,11 @@
       showStatus("Image deleted");
     }
 
+    function requestDeleteSelectedImage() {
+      if (!selectedImageId || deleteImageDialog.open) return;
+      deleteImageDialog.showModal();
+    }
+
     function shouldDraw(event) {
       return event.pointerType === "pen" || mode === "pen";
     }
@@ -850,9 +1024,22 @@
     moveTool.addEventListener("click", () => setMode("move"));
     penTool.addEventListener("click", () => setMode("pen"));
     undoButton.addEventListener("click", undo);
-    deleteButton.addEventListener("click", deleteSelectedImage);
+    deleteButton.addEventListener("click", requestDeleteSelectedImage);
     document.getElementById("zoomIn").addEventListener("click", () => zoomAt(scale * 1.2));
     document.getElementById("zoomOut").addEventListener("click", () => zoomAt(scale / 1.2));
+    toolsToggle.addEventListener("click", () => setToolsOpen(!toolsPanel.classList.contains("is-open")));
+    document.getElementById("closeTools").addEventListener("click", () => setToolsOpen(false));
+    sheetBackdrop.addEventListener("click", () => setToolsOpen(false));
+
+    document.getElementById("deleteImageForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      deleteImageDialog.close();
+      await deleteSelectedImage();
+    });
+    document.getElementById("cancelImageDelete").addEventListener("click", () => deleteImageDialog.close());
+    deleteImageDialog.addEventListener("click", event => {
+      if (event.target === deleteImageDialog) deleteImageDialog.close();
+    });
 
     window.addEventListener("keydown", event => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "z") {
@@ -860,7 +1047,7 @@
         undo();
       } else if ((event.key === "Delete" || event.key === "Backspace") && selectedImageId) {
         event.preventDefault();
-        deleteSelectedImage();
+        requestDeleteSelectedImage();
       }
     });
 

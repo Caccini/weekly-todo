@@ -21,6 +21,7 @@
       --soft: #f6f6f6;
       --paper: #ffffff;
       --danger: #8b1e1e;
+      --shadow: 0 18px 50px rgba(0, 0, 0, .16);
     }
 
     * { box-sizing: border-box; }
@@ -41,6 +42,7 @@
       border: 1px solid var(--ink);
       border-radius: 8px;
       cursor: pointer;
+      transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
     }
 
     button:focus-visible, input:focus-visible {
@@ -194,7 +196,7 @@
 
     .task {
       display: grid;
-      grid-template-columns: 24px 110px minmax(0, 1fr) 34px;
+      grid-template-columns: 24px 110px minmax(0, 1fr) 40px;
       align-items: center;
       gap: 12px;
       min-height: 48px;
@@ -266,17 +268,55 @@
       text-decoration-thickness: 1.5px;
     }
 
-    .delete-task {
-      width: 32px;
-      height: 32px;
+    .task-menu-wrap {
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .task-menu-trigger {
+      width: 36px;
+      height: 36px;
       padding: 0;
       border-color: transparent;
       color: var(--muted);
-      font-size: 22px;
+      font-size: 21px;
       line-height: 1;
     }
 
-    .delete-task:hover { color: var(--danger); }
+    .task-menu-trigger:hover,
+    .task-menu-trigger[aria-expanded="true"] {
+      background: var(--soft);
+      color: var(--ink);
+    }
+
+    .task-menu {
+      position: absolute;
+      z-index: 10;
+      top: calc(100% + 4px);
+      right: 0;
+      display: grid;
+      min-width: 150px;
+      padding: 5px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, .14);
+    }
+
+    .task-menu[hidden] { display: none; }
+
+    .task-menu button {
+      min-height: 38px;
+      padding: 0 10px;
+      border: 0;
+      border-radius: 7px;
+      text-align: left;
+    }
+
+    .task-menu button:hover,
+    .task-menu button:focus-visible { background: var(--soft); }
+    .task-menu .danger-action { color: var(--danger); }
 
     .add-row {
       display: flex;
@@ -291,6 +331,8 @@
       border-color: var(--line);
     }
 
+    .add-task:hover { background: var(--soft); border-color: var(--ink); }
+
     .empty {
       padding: 15px 0;
       color: var(--muted);
@@ -300,19 +342,46 @@
     dialog {
       width: min(440px, calc(100% - 32px));
       padding: 0;
-      border: 1px solid var(--ink);
-      border-radius: 12px;
-      box-shadow: 0 24px 70px rgba(0,0,0,.18);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
     }
 
     dialog::backdrop { background: rgba(0,0,0,.34); }
 
     .dialog-form { padding: 22px; }
 
+    .dialog-heading {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
     .dialog-form h3 {
-      margin: 0 0 18px;
+      margin: 0;
       font-size: 22px;
     }
+
+    .dialog-description {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .dialog-close {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border: 0;
+      color: var(--muted);
+      font-size: 22px;
+    }
+
+    .dialog-close:hover { background: var(--soft); color: var(--ink); }
 
     .field {
       display: grid;
@@ -347,6 +416,55 @@
     .dialog-actions button { padding: 9px 14px; }
     .cancel-button { border-color: var(--line); }
     .save-button { background: var(--ink); color: var(--paper); }
+    .danger-button { background: var(--danger); border-color: var(--danger); color: var(--paper); }
+
+    .toast {
+      position: fixed;
+      z-index: 30;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
+      max-width: calc(100% - 32px);
+      padding: 10px 14px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: 0 8px 28px rgba(0,0,0,.18);
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 10px);
+      transition: opacity 150ms ease, transform 150ms ease;
+    }
+
+    .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+    [data-tooltip] { position: relative; }
+
+    @media (hover: hover) {
+      [data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        z-index: 20;
+        left: 50%;
+        bottom: calc(100% + 8px);
+        width: max-content;
+        max-width: 180px;
+        padding: 6px 8px;
+        border-radius: 6px;
+        background: var(--ink);
+        color: var(--paper);
+        font-size: 12px;
+        line-height: 1.2;
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 3px);
+        transition: opacity 120ms ease, transform 120ms ease;
+      }
+
+      [data-tooltip]:hover::after,
+      [data-tooltip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
+    }
 
     .visually-hidden {
       position: absolute;
@@ -385,12 +503,12 @@
         margin-top: -5px;
       }
       .task input[type="checkbox"] { grid-row: 1 / 3; }
-      .delete-task { grid-column: 3; grid-row: 1 / 3; }
+      .task-menu-wrap { grid-column: 3; grid-row: 1 / 3; }
     }
 
     @media print {
       .shell { width: 100%; padding: 0; }
-      .canvas-button, .note, .week-calendar, .add-row, .delete-task { display: none !important; }
+      .canvas-button, .note, .week-calendar, .add-row, .task-menu-wrap { display: none !important; }
       header { margin-bottom: 18px; }
       .days { gap: 18px; }
       .task { min-height: 36px; }
@@ -416,7 +534,13 @@
 
   <dialog id="taskDialog">
     <form class="dialog-form" id="taskForm">
-      <h3 id="dialogTitle">Add a to-do</h3>
+      <div class="dialog-heading">
+        <div>
+          <h3 id="dialogTitle">Add a to-do</h3>
+          <p class="dialog-description">Choose a time and write the task.</p>
+        </div>
+        <button class="dialog-close" id="closeTaskDialog" type="button" aria-label="Close add task dialog">&times;</button>
+      </div>
       <input type="hidden" id="dayKey">
       <div class="field">
         <label for="taskTime">Time</label>
@@ -433,7 +557,24 @@
     </form>
   </dialog>
 
+  <dialog id="deleteTaskDialog">
+    <form class="dialog-form" id="deleteTaskForm">
+      <div class="dialog-heading">
+        <div>
+          <h3>Delete this to-do?</h3>
+          <p class="dialog-description" id="deleteTaskDescription">This action cannot be undone.</p>
+        </div>
+        <button class="dialog-close" id="closeDeleteDialog" type="button" aria-label="Close delete dialog">&times;</button>
+      </div>
+      <div class="dialog-actions">
+        <button class="cancel-button" id="cancelDeleteButton" type="button">Cancel</button>
+        <button class="danger-button" type="submit">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
   <div class="visually-hidden" aria-live="polite" id="liveRegion"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
     const STORAGE_KEY = "weekly-todo-v1";
@@ -525,6 +666,8 @@
     }
 
     let state = loadState();
+    let pendingTaskDeletion = null;
+    let toastTimer = null;
     let activeDayKey = (() => {
       const today = new Date().getDay();
       return today >= 1 && today <= 5 ? DAYS[today - 1].toLowerCase() : "monday";
@@ -532,6 +675,23 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.add("is-visible");
+      document.getElementById("liveRegion").textContent = message;
+      toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2200);
+    }
+
+    function closeTaskMenus(except = null) {
+      document.querySelectorAll(".task-menu").forEach(menu => {
+        if (menu === except) return;
+        menu.hidden = true;
+        menu.previousElementSibling?.setAttribute("aria-expanded", "false");
+      });
     }
 
     async function syncChatTasks() {
@@ -562,7 +722,7 @@
 
         if (added) {
           saveState();
-          document.getElementById("liveRegion").textContent = `${added} task${added === 1 ? "" : "s"} added from chat`;
+          showToast(`${added} task${added === 1 ? "" : "s"} added from chat`);
           render();
         }
       } catch (_) {
@@ -581,6 +741,7 @@
       check.addEventListener("change", () => {
         task.done = check.checked;
         saveState();
+        showToast(check.checked ? "Task completed" : "Task marked incomplete");
         render();
       });
 
@@ -612,7 +773,7 @@
           if (save && updated) {
             task.text = updated;
             saveState();
-            document.getElementById("liveRegion").textContent = `Updated to ${updated}`;
+            showToast("Task updated");
           }
           render();
         };
@@ -646,19 +807,57 @@
         lastTapAt = now;
       }, { passive: false });
 
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "delete-task";
-      remove.innerHTML = "&times;";
-      remove.setAttribute("aria-label", `Delete ${task.text}`);
-      remove.addEventListener("click", () => {
-        state.days[dayKey] = state.days[dayKey].filter(item => item.id !== task.id);
-        saveState();
-        document.getElementById("liveRegion").textContent = `Deleted ${task.text}`;
-        render();
+      const menuWrap = document.createElement("div");
+      menuWrap.className = "task-menu-wrap";
+
+      const menuTrigger = document.createElement("button");
+      menuTrigger.type = "button";
+      menuTrigger.className = "task-menu-trigger";
+      menuTrigger.textContent = "⋯";
+      menuTrigger.setAttribute("aria-label", `Actions for ${task.text}`);
+      menuTrigger.setAttribute("aria-haspopup", "menu");
+      menuTrigger.setAttribute("aria-expanded", "false");
+      menuTrigger.dataset.tooltip = "Task actions";
+
+      const menu = document.createElement("div");
+      menu.className = "task-menu";
+      menu.setAttribute("role", "menu");
+      menu.hidden = true;
+
+      const editButton = document.createElement("button");
+      editButton.type = "button";
+      editButton.setAttribute("role", "menuitem");
+      editButton.textContent = "Edit task";
+      editButton.addEventListener("click", () => {
+        closeTaskMenus();
+        editText();
       });
 
-      li.append(check, time, text, remove);
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.className = "danger-action";
+      deleteButton.setAttribute("role", "menuitem");
+      deleteButton.textContent = "Delete task";
+      deleteButton.addEventListener("click", () => {
+        closeTaskMenus();
+        pendingTaskDeletion = { dayKey, taskId: task.id, text: task.text };
+        document.getElementById("deleteTaskDescription").textContent = `“${task.text}” will be permanently removed.`;
+        document.getElementById("deleteTaskDialog").showModal();
+      });
+
+      menuTrigger.addEventListener("click", event => {
+        event.stopPropagation();
+        const willOpen = menu.hidden;
+        closeTaskMenus(menu);
+        menu.hidden = !willOpen;
+        menuTrigger.setAttribute("aria-expanded", String(willOpen));
+        if (willOpen) editButton.focus();
+      });
+      menu.addEventListener("click", event => event.stopPropagation());
+      menu.append(editButton, deleteButton);
+      menuWrap.append(menuTrigger, menu);
+
+      li.append(check, time, text, menuWrap);
       return li;
     }
 
@@ -760,13 +959,41 @@
       state.days[dayKey].sort((a, b) => a.time.localeCompare(b.time));
       saveState();
       dialog.close();
-      document.getElementById("liveRegion").textContent = `Added ${text}`;
+      showToast("Task added");
       render();
     });
 
     document.getElementById("cancelButton").addEventListener("click", () => dialog.close());
+    document.getElementById("closeTaskDialog").addEventListener("click", () => dialog.close());
     dialog.addEventListener("click", event => {
       if (event.target === dialog) dialog.close();
+    });
+
+    const deleteTaskDialog = document.getElementById("deleteTaskDialog");
+    document.getElementById("deleteTaskForm").addEventListener("submit", event => {
+      event.preventDefault();
+      if (!pendingTaskDeletion) return;
+      const { dayKey, taskId } = pendingTaskDeletion;
+      state.days[dayKey] = state.days[dayKey].filter(item => item.id !== taskId);
+      pendingTaskDeletion = null;
+      saveState();
+      deleteTaskDialog.close();
+      showToast("Task deleted");
+      render();
+    });
+    const closeDeleteDialog = () => {
+      pendingTaskDeletion = null;
+      deleteTaskDialog.close();
+    };
+    document.getElementById("cancelDeleteButton").addEventListener("click", closeDeleteDialog);
+    document.getElementById("closeDeleteDialog").addEventListener("click", closeDeleteDialog);
+    deleteTaskDialog.addEventListener("click", event => {
+      if (event.target === deleteTaskDialog) closeDeleteDialog();
+    });
+
+    document.addEventListener("click", () => closeTaskMenus());
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") closeTaskMenus();
     });
 
     // Reset automatically after the week changes, even if the app stays open.
