@@ -76,9 +76,29 @@
       font-size: 15px;
     }
 
-    .print-button {
-      padding: 9px 13px;
+    .canvas-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 1px solid var(--ink);
+      border-radius: 999px;
+      color: var(--ink);
+      font-weight: 650;
+      text-decoration: none;
       white-space: nowrap;
+    }
+
+    .canvas-button:hover,
+    .canvas-button:focus-visible {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .canvas-button:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 2px;
     }
 
     .note {
@@ -370,7 +390,7 @@
 
     @media print {
       .shell { width: 100%; padding: 0; }
-      .print-button, .note, .week-calendar, .add-row, .delete-task { display: none !important; }
+      .canvas-button, .note, .week-calendar, .add-row, .delete-task { display: none !important; }
       header { margin-bottom: 18px; }
       .days { gap: 18px; }
       .task { min-height: 36px; }
@@ -386,7 +406,7 @@
         <h1>Weekly To-Do</h1>
         <p class="week-range" id="weekRange"></p>
       </div>
-      <button class="print-button" type="button" id="printButton">Print / Save PDF</button>
+      <a class="canvas-button" href="./canvas.html">Open canvas</a>
     </header>
 
     <nav class="week-calendar" id="weekCalendar" aria-label="Week calendar"></nav>
@@ -745,8 +765,6 @@
     });
 
     document.getElementById("cancelButton").addEventListener("click", () => dialog.close());
-    document.getElementById("printButton").addEventListener("click", () => window.print());
-
     dialog.addEventListener("click", event => {
       if (event.target === dialog) dialog.close();
     });
