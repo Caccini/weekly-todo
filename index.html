@@ -1940,6 +1940,18 @@
     startFocusTicker();
     syncChatTasks();
 
+    const requestedView = new URLSearchParams(window.location.search).get("view");
+    if (requestedView === "focus" || requestedView === "chat") {
+      setAppView(requestedView);
+    } else if (requestedView === "todo") {
+      activeDayKey = "monday";
+      setAppView("planner");
+    } else if (requestedView === "today") {
+      const todayIndex = new Date().getDay() - 1;
+      activeDayKey = todayIndex >= 0 && todayIndex < DAYS.length ? DAYS[todayIndex].toLowerCase() : "monday";
+      setAppView("planner");
+    }
+
     function refreshFromChatWhenAppReturns() {
       syncChatTasks();
       if ("serviceWorker" in navigator) {
