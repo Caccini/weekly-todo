@@ -187,7 +187,7 @@
       left: max(20px, env(safe-area-inset-left));
       right: max(20px, env(safe-area-inset-right));
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: 1fr auto;
       align-items: center;
       gap: 18px;
       min-height: 54px;
@@ -212,6 +212,10 @@
     }
 
     .mode-switcher {
+      position: fixed;
+      z-index: 12;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
       display: flex;
       align-items: center;
       gap: 3px;
@@ -220,6 +224,9 @@
       background: rgba(255, 255, 255, .92);
       box-shadow: 0 8px 30px rgba(48, 44, 54, .08);
       pointer-events: auto;
+      transform: translateX(-50%);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
     .mode-switcher a {
@@ -256,6 +263,7 @@
 
     .header-actions {
       display: flex;
+      grid-column: 2;
       justify-content: flex-end;
       gap: 8px;
       pointer-events: auto;
@@ -304,7 +312,7 @@
       position: fixed;
       z-index: 8;
       left: 50%;
-      bottom: max(16px, env(safe-area-inset-bottom));
+      bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px));
       display: flex;
       align-items: center;
       max-width: calc(100% - 24px);
@@ -525,8 +533,11 @@
         gap: 10px;
       }
       .brand-mini { display: none; }
-      .mode-switcher { justify-self: start; }
-      .mode-switcher a { padding: 0 9px; font-size: 14px; }
+      .mode-switcher {
+        width: min(480px, calc(100% - 24px));
+        justify-content: center;
+      }
+      .mode-switcher a { min-width: 0; padding: 0 9px; flex: 1; font-size: 14px; }
       .mode-switcher .canvas-tab { padding-inline: 9px; }
       .mode-switcher .chat-tab { padding-right: 5px; }
       .mode-switcher .chat-tab > span:first-child { display: none; }
@@ -540,7 +551,7 @@
       .tools {
         left: 12px;
         right: 12px;
-        bottom: max(12px, env(safe-area-inset-bottom));
+        bottom: max(84px, calc(env(safe-area-inset-bottom) + 72px));
         display: block;
         max-width: none;
         overflow: hidden;
@@ -612,8 +623,8 @@
       <span>nowy</span>
     </div>
     <nav class="mode-switcher" aria-label="App sections">
-      <a href="./index.html?view=notes">Notes</a>
       <a href="./index.html?view=today">Today</a>
+      <a href="./index.html?view=notes">Notes</a>
       <a href="./index.html?view=focus">Focus</a>
       <a class="canvas-tab is-active" href="./canvas.html" aria-current="page">Canvas</a>
       <a class="chat-tab" href="./index.html?view=chat"><span>Chat</span><span class="chat-avatar" aria-hidden="true">✦</span></a>
