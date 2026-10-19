@@ -311,113 +311,146 @@
     [hidden] { display: none !important; }
 
     .focus-view {
+      position: relative;
+      left: 50%;
       display: grid;
-      min-height: calc(100vh - 110px - env(safe-area-inset-top));
-      padding: 54px 0 max(28px, env(safe-area-inset-bottom));
+      width: 100vw;
+      min-height: calc(100vh - 74px - env(safe-area-inset-top));
+      margin-left: -50vw;
+      padding: 38px 24px max(34px, env(safe-area-inset-bottom));
+      background:
+        radial-gradient(ellipse 78% 58% at 50% 0%, rgba(202, 184, 255, .78), rgba(231, 224, 255, .56) 38%, rgba(251, 250, 252, 0) 76%),
+        var(--paper);
+      overflow: hidden;
       place-items: center;
     }
 
     .focus-panel {
-      display: grid;
-      width: min(620px, 100%);
-      justify-items: center;
-      padding: clamp(28px, 6vw, 58px);
-      border: 1px solid rgba(23, 23, 26, .05);
-      border-radius: 34px;
-      background: rgba(255, 255, 255, .8);
-      box-shadow: var(--shadow);
+      display: flex;
+      width: min(520px, 100%);
+      align-items: center;
+      padding: 20px;
+      flex-direction: column;
       text-align: center;
-    }
-
-    .focus-kicker {
-      margin: 0 0 12px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: .12em;
-      text-transform: uppercase;
+      transform: translateY(-1.5vh);
     }
 
     .focus-panel h1 {
-      margin: 0;
+      margin: 0 0 24px;
       font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(34px, 6vw, 52px);
+      font-size: clamp(38px, 6vw, 56px);
       font-weight: 500;
       letter-spacing: -.04em;
     }
 
     .timer-ring {
+      position: relative;
       display: grid;
-      width: clamp(230px, 42vw, 310px);
+      width: clamp(270px, 39vw, 350px);
       aspect-ratio: 1;
-      margin: 34px 0 28px;
-      padding: 12px;
+      margin: 0 0 22px;
+      padding: clamp(25px, 4vw, 32px);
       border-radius: 50%;
-      background: conic-gradient(var(--ink) var(--timer-progress, 0%), #eceaed 0);
+      background: conic-gradient(#9a70f5 var(--timer-progress, 25%), #dcd1fa 0);
+      box-shadow: 0 20px 56px rgba(120, 87, 198, .12);
       place-items: center;
       transition: background 250ms linear;
     }
 
     .timer-face {
+      position: relative;
       display: grid;
       width: 100%;
       height: 100%;
       border-radius: 50%;
-      background: var(--paper);
+      background: rgba(251, 250, 252, .94);
+      place-items: center;
+    }
+
+    .timer-readout {
+      display: grid;
+      gap: 1px;
       place-items: center;
     }
 
     .timer-time {
       font-family: Georgia, "Times New Roman", serif;
-      font-size: clamp(54px, 11vw, 82px);
+      font-size: clamp(58px, 9vw, 78px);
+      line-height: .95;
       font-variant-numeric: tabular-nums;
       letter-spacing: -.055em;
     }
 
-    .timer-presets,
+    .timer-time.is-counting { font-size: clamp(44px, 7vw, 62px); }
+
+    .timer-unit {
+      margin-top: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .timer-mark {
+      position: absolute;
+      display: grid;
+      width: 42px;
+      height: 34px;
+      padding: 0;
+      border-radius: 999px;
+      color: #aaa7ae;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+      place-items: center;
+    }
+
+    .timer-mark:hover,
+    .timer-mark:focus-visible,
+    .timer-mark.is-active { background: rgba(154, 112, 245, .12); color: #6942c4; }
+    .timer-mark-top { left: 50%; top: 7px; transform: translateX(-50%); }
+    .timer-mark-right { right: 7px; top: 50%; transform: translateY(-50%); }
+    .timer-mark-bottom { left: 50%; bottom: 7px; transform: translateX(-50%); }
+    .timer-mark-left { left: 7px; top: 50%; transform: translateY(-50%); }
+
     .timer-actions {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
-    }
-
-    .timer-presets { margin-bottom: 24px; }
-
-    .timer-preset {
-      min-height: 38px;
-      padding: 0 15px;
-      border-radius: 999px;
-      background: var(--soft);
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    .timer-preset.is-active {
-      background: var(--ink);
-      color: var(--paper);
     }
 
     .timer-primary,
     .timer-secondary {
-      min-width: 120px;
-      min-height: 48px;
-      padding: 0 24px;
+      min-height: 52px;
       border-radius: 999px;
       font-weight: 780;
     }
 
-    .timer-primary { background: var(--ink); color: var(--paper); }
-    .timer-secondary { background: var(--soft); color: var(--ink); }
-    .timer-primary:hover, .timer-secondary:hover, .timer-preset:hover { transform: translateY(-1px); }
+    .timer-primary {
+      display: inline-flex;
+      min-width: 142px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 26px;
+      background: #e7e3df;
+      color: var(--ink);
+    }
+
+    .timer-secondary {
+      min-width: 70px;
+      padding: 0 12px;
+      color: var(--muted);
+    }
+
+    .timer-play { font-size: 16px; line-height: 1; }
+    .timer-primary:hover, .timer-secondary:hover { transform: translateY(-1px); }
 
     .focus-status {
-      min-height: 22px;
-      margin: 20px 0 0;
+      min-height: 20px;
+      margin: 13px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .chat-view {
@@ -950,8 +983,9 @@
       .chat-empty { padding-top: 48px; }
       .chat-composer-wrap { padding: 0; }
       .chat-composer { padding-left: 16px; }
-      .focus-view { padding-top: 28px; }
-      .focus-panel { padding: 28px 18px; border-radius: 26px; }
+      .focus-view { min-height: calc(100vh - 74px - env(safe-area-inset-top)); padding: 24px 14px; }
+      .focus-panel { padding: 12px; transform: translateY(-1vh); }
+      .timer-ring { width: min(76vw, 320px); }
     }
 
     @media print {
@@ -1028,20 +1062,24 @@
 
     <section class="focus-view" id="focusView" aria-label="Focus timer" hidden>
       <div class="focus-panel">
-        <p class="focus-kicker">Quiet focus</p>
-        <h1>Focus timer</h1>
-        <div class="timer-ring" id="timerRing" aria-hidden="true">
+        <div class="timer-ring" id="timerRing">
           <div class="timer-face">
-            <span class="timer-time" id="timerTime">25:00</span>
+            <button class="timer-mark timer-mark-top" type="button" data-minutes="60" aria-label="Set timer to 60 minutes">60</button>
+            <button class="timer-mark timer-mark-right is-active" type="button" data-minutes="15" aria-label="Set timer to 15 minutes">15</button>
+            <button class="timer-mark timer-mark-bottom" type="button" data-minutes="30" aria-label="Set timer to 30 minutes">30</button>
+            <button class="timer-mark timer-mark-left" type="button" data-minutes="45" aria-label="Set timer to 45 minutes">45</button>
+            <span class="timer-readout">
+              <span class="timer-time" id="timerTime">15</span>
+              <span class="timer-unit">MINS</span>
+            </span>
           </div>
         </div>
-        <div class="timer-presets" aria-label="Timer length">
-          <button class="timer-preset" type="button" data-minutes="5">5 min</button>
-          <button class="timer-preset is-active" type="button" data-minutes="25">25 min</button>
-          <button class="timer-preset" type="button" data-minutes="50">50 min</button>
-        </div>
+        <h1>Focus</h1>
         <div class="timer-actions">
-          <button class="timer-primary" id="timerStart" type="button">Start</button>
+          <button class="timer-primary" id="timerStart" type="button">
+            <span id="timerStartLabel">Start</span>
+            <span class="timer-play" id="timerStartIcon" aria-hidden="true">▶</span>
+          </button>
           <button class="timer-secondary" id="timerReset" type="button">Reset</button>
         </div>
         <p class="focus-status" id="focusStatus" aria-live="polite">Ready when you are.</p>
@@ -1212,7 +1250,7 @@
     let pendingChatDraft = null;
     let toastTimer = null;
     let currentView = "planner";
-    const FOCUS_STORAGE_KEY = "weekly-todo-focus-v1";
+    const FOCUS_STORAGE_KEY = "weekly-todo-focus-v2";
     let focusTimerInterval = null;
     let focusTimerState = loadFocusTimerState();
     let activeDayKey = (() => {
@@ -1576,7 +1614,7 @@
     }
 
     function loadFocusTimerState() {
-      const fallback = { duration: 25 * 60, remaining: 25 * 60, isRunning: false, endsAt: null };
+      const fallback = { duration: 15 * 60, remaining: 15 * 60, isRunning: false, endsAt: null };
       try {
         const saved = JSON.parse(localStorage.getItem(FOCUS_STORAGE_KEY));
         if (!saved || !Number.isFinite(saved.duration) || !Number.isFinite(saved.remaining)) return fallback;
@@ -1622,18 +1660,22 @@
 
       const minutes = Math.floor(remaining / 60);
       const seconds = remaining % 60;
-      document.getElementById("timerTime").textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-      const progress = focusTimerState.duration
-        ? Math.min(100, Math.max(0, ((focusTimerState.duration - remaining) / focusTimerState.duration) * 100))
-        : 0;
+      const preciseTime = seconds === 0 && !focusTimerState.isRunning
+        ? String(minutes)
+        : `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      const timerTime = document.getElementById("timerTime");
+      timerTime.textContent = preciseTime;
+      timerTime.classList.toggle("is-counting", preciseTime.includes(":"));
+      const progress = Math.min(100, Math.max(0, (remaining / (60 * 60)) * 100));
       document.getElementById("timerRing").style.setProperty("--timer-progress", `${progress}%`);
-      document.getElementById("timerStart").textContent = focusTimerState.isRunning
+      document.getElementById("timerStartLabel").textContent = focusTimerState.isRunning
         ? "Pause"
         : (remaining === 0 ? "Start again" : "Start");
+      document.getElementById("timerStartIcon").textContent = focusTimerState.isRunning ? "Ⅱ" : "▶";
       document.getElementById("focusStatus").textContent = focusTimerState.isRunning
         ? "Stay with this one thing."
         : (remaining === 0 ? "Focus complete." : (remaining < focusTimerState.duration ? "Paused." : "Ready when you are."));
-      document.querySelectorAll(".timer-preset").forEach(button => {
+      document.querySelectorAll(".timer-mark").forEach(button => {
         button.classList.toggle("is-active", Number(button.dataset.minutes) * 60 === focusTimerState.duration);
       });
     }
@@ -1815,7 +1857,7 @@
     document.getElementById("chatTab").addEventListener("click", () => setAppView("chat"));
     document.getElementById("timerStart").addEventListener("click", toggleFocusTimer);
     document.getElementById("timerReset").addEventListener("click", resetFocusTimer);
-    document.querySelectorAll(".timer-preset").forEach(button => {
+    document.querySelectorAll(".timer-mark").forEach(button => {
       button.addEventListener("click", () => chooseFocusDuration(Number(button.dataset.minutes)));
     });
     document.getElementById("chatForm").addEventListener("submit", event => {
