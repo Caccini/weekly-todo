@@ -122,6 +122,8 @@
       padding-right: 7px;
     }
 
+    .mode-switcher .canvas-tab { padding-inline: 17px; }
+
     .chat-avatar {
       display: grid;
       width: 30px;
@@ -307,6 +309,116 @@
     }
 
     [hidden] { display: none !important; }
+
+    .focus-view {
+      display: grid;
+      min-height: calc(100vh - 110px - env(safe-area-inset-top));
+      padding: 54px 0 max(28px, env(safe-area-inset-bottom));
+      place-items: center;
+    }
+
+    .focus-panel {
+      display: grid;
+      width: min(620px, 100%);
+      justify-items: center;
+      padding: clamp(28px, 6vw, 58px);
+      border: 1px solid rgba(23, 23, 26, .05);
+      border-radius: 34px;
+      background: rgba(255, 255, 255, .8);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .focus-kicker {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .focus-panel h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(34px, 6vw, 52px);
+      font-weight: 500;
+      letter-spacing: -.04em;
+    }
+
+    .timer-ring {
+      display: grid;
+      width: clamp(230px, 42vw, 310px);
+      aspect-ratio: 1;
+      margin: 34px 0 28px;
+      padding: 12px;
+      border-radius: 50%;
+      background: conic-gradient(var(--ink) var(--timer-progress, 0%), #eceaed 0);
+      place-items: center;
+      transition: background 250ms linear;
+    }
+
+    .timer-face {
+      display: grid;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: var(--paper);
+      place-items: center;
+    }
+
+    .timer-time {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(54px, 11vw, 82px);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -.055em;
+    }
+
+    .timer-presets,
+    .timer-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .timer-presets { margin-bottom: 24px; }
+
+    .timer-preset {
+      min-height: 38px;
+      padding: 0 15px;
+      border-radius: 999px;
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .timer-preset.is-active {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .timer-primary,
+    .timer-secondary {
+      min-width: 120px;
+      min-height: 48px;
+      padding: 0 24px;
+      border-radius: 999px;
+      font-weight: 780;
+    }
+
+    .timer-primary { background: var(--ink); color: var(--paper); }
+    .timer-secondary { background: var(--soft); color: var(--ink); }
+    .timer-primary:hover, .timer-secondary:hover, .timer-preset:hover { transform: translateY(-1px); }
+
+    .focus-status {
+      min-height: 22px;
+      margin: 20px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
 
     .chat-view {
       display: flex;
@@ -816,7 +928,8 @@
       .app-header { grid-template-columns: 1fr auto; }
       .brand-mini { display: none; }
       .mode-switcher { justify-self: start; }
-      .mode-switcher button, .mode-switcher a { padding: 0 11px; }
+      .mode-switcher button, .mode-switcher a { padding: 0 9px; font-size: 14px; }
+      .mode-switcher .canvas-tab { padding-inline: 9px; }
       .mode-switcher .chat-tab { padding-right: 5px; }
       .mode-switcher .chat-tab > span:first-child { display: none; }
       .header-actions .round-action:first-child { display: none; }
@@ -837,6 +950,8 @@
       .chat-empty { padding-top: 48px; }
       .chat-composer-wrap { padding: 0; }
       .chat-composer { padding-left: 16px; }
+      .focus-view { padding-top: 28px; }
+      .focus-panel { padding: 28px 18px; border-radius: 26px; }
     }
 
     @media print {
@@ -859,7 +974,8 @@
       <nav class="mode-switcher" aria-label="App sections">
         <button id="toDoTab" type="button">To-do</button>
         <button class="is-active" id="todayTab" type="button">Today</button>
-        <a href="./canvas.html">Focus</a>
+        <button id="focusTab" type="button">Focus</button>
+        <a class="canvas-tab" href="./canvas.html">Canvas</a>
         <button class="chat-tab" id="chatTab" type="button">
           <span>Chat</span>
           <span class="chat-avatar" aria-hidden="true">✦</span>
@@ -909,6 +1025,28 @@
       <p class="note">Double-tap a task to edit it. Completed tasks stay until you delete them or a new week begins.</p>
       <div class="days" id="days"></div>
     </div>
+
+    <section class="focus-view" id="focusView" aria-label="Focus timer" hidden>
+      <div class="focus-panel">
+        <p class="focus-kicker">Quiet focus</p>
+        <h1>Focus timer</h1>
+        <div class="timer-ring" id="timerRing" aria-hidden="true">
+          <div class="timer-face">
+            <span class="timer-time" id="timerTime">25:00</span>
+          </div>
+        </div>
+        <div class="timer-presets" aria-label="Timer length">
+          <button class="timer-preset" type="button" data-minutes="5">5 min</button>
+          <button class="timer-preset is-active" type="button" data-minutes="25">25 min</button>
+          <button class="timer-preset" type="button" data-minutes="50">50 min</button>
+        </div>
+        <div class="timer-actions">
+          <button class="timer-primary" id="timerStart" type="button">Start</button>
+          <button class="timer-secondary" id="timerReset" type="button">Reset</button>
+        </div>
+        <p class="focus-status" id="focusStatus" aria-live="polite">Ready when you are.</p>
+      </div>
+    </section>
 
     <section class="chat-view" id="chatView" aria-label="To-do chat" hidden>
       <div class="chat-thread" id="chatThread" aria-live="polite">
@@ -1074,6 +1212,9 @@
     let pendingChatDraft = null;
     let toastTimer = null;
     let currentView = "planner";
+    const FOCUS_STORAGE_KEY = "weekly-todo-focus-v1";
+    let focusTimerInterval = null;
+    let focusTimerState = loadFocusTimerState();
     let activeDayKey = (() => {
       const today = new Date().getDay();
       return today >= 1 && today <= 5 ? DAYS[today - 1].toLowerCase() : "monday";
@@ -1317,6 +1458,7 @@
       if (currentView === "planner") {
         document.getElementById("todayTab").classList.toggle("is-active", activeDayKey === todayKey);
         document.getElementById("toDoTab").classList.toggle("is-active", activeDayKey !== todayKey);
+        document.getElementById("focusTab").classList.remove("is-active");
         document.getElementById("chatTab").classList.remove("is-active");
       }
       {
@@ -1412,16 +1554,133 @@
     function setAppView(view) {
       currentView = view;
       const isChat = view === "chat";
-      document.getElementById("plannerView").hidden = isChat;
+      const isFocus = view === "focus";
+      document.getElementById("plannerView").hidden = isChat || isFocus;
+      document.getElementById("focusView").hidden = !isFocus;
       document.getElementById("chatView").hidden = !isChat;
       document.getElementById("chatTab").classList.toggle("is-active", isChat);
+      document.getElementById("focusTab").classList.toggle("is-active", isFocus);
       if (isChat) {
         document.getElementById("todayTab").classList.remove("is-active");
         document.getElementById("toDoTab").classList.remove("is-active");
+        document.getElementById("focusTab").classList.remove("is-active");
         requestAnimationFrame(() => document.getElementById("chatInput").focus());
+      } else if (isFocus) {
+        document.getElementById("todayTab").classList.remove("is-active");
+        document.getElementById("toDoTab").classList.remove("is-active");
+        document.getElementById("chatTab").classList.remove("is-active");
+        renderFocusTimer();
       } else {
         render();
       }
+    }
+
+    function loadFocusTimerState() {
+      const fallback = { duration: 25 * 60, remaining: 25 * 60, isRunning: false, endsAt: null };
+      try {
+        const saved = JSON.parse(localStorage.getItem(FOCUS_STORAGE_KEY));
+        if (!saved || !Number.isFinite(saved.duration) || !Number.isFinite(saved.remaining)) return fallback;
+        const restored = {
+          duration: Math.max(60, saved.duration),
+          remaining: Math.max(0, saved.remaining),
+          isRunning: Boolean(saved.isRunning && saved.endsAt),
+          endsAt: saved.endsAt || null
+        };
+        if (restored.isRunning && restored.endsAt <= Date.now()) {
+          restored.remaining = 0;
+          restored.isRunning = false;
+          restored.endsAt = null;
+        }
+        return restored;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    function focusSecondsLeft() {
+      if (!focusTimerState.isRunning || !focusTimerState.endsAt) return focusTimerState.remaining;
+      return Math.max(0, Math.ceil((focusTimerState.endsAt - Date.now()) / 1000));
+    }
+
+    function saveFocusTimerState() {
+      localStorage.setItem(FOCUS_STORAGE_KEY, JSON.stringify(focusTimerState));
+    }
+
+    function renderFocusTimer() {
+      const wasRunning = focusTimerState.isRunning;
+      const remaining = focusSecondsLeft();
+      focusTimerState.remaining = remaining;
+
+      if (wasRunning && remaining === 0) {
+        focusTimerState.isRunning = false;
+        focusTimerState.endsAt = null;
+        clearInterval(focusTimerInterval);
+        focusTimerInterval = null;
+        saveFocusTimerState();
+        if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+      }
+
+      const minutes = Math.floor(remaining / 60);
+      const seconds = remaining % 60;
+      document.getElementById("timerTime").textContent = `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      const progress = focusTimerState.duration
+        ? Math.min(100, Math.max(0, ((focusTimerState.duration - remaining) / focusTimerState.duration) * 100))
+        : 0;
+      document.getElementById("timerRing").style.setProperty("--timer-progress", `${progress}%`);
+      document.getElementById("timerStart").textContent = focusTimerState.isRunning
+        ? "Pause"
+        : (remaining === 0 ? "Start again" : "Start");
+      document.getElementById("focusStatus").textContent = focusTimerState.isRunning
+        ? "Stay with this one thing."
+        : (remaining === 0 ? "Focus complete." : (remaining < focusTimerState.duration ? "Paused." : "Ready when you are."));
+      document.querySelectorAll(".timer-preset").forEach(button => {
+        button.classList.toggle("is-active", Number(button.dataset.minutes) * 60 === focusTimerState.duration);
+      });
+    }
+
+    function startFocusTicker() {
+      clearInterval(focusTimerInterval);
+      focusTimerInterval = null;
+      if (!focusTimerState.isRunning) return;
+      focusTimerInterval = setInterval(renderFocusTimer, 250);
+    }
+
+    function toggleFocusTimer() {
+      if (focusTimerState.isRunning) {
+        focusTimerState.remaining = focusSecondsLeft();
+        focusTimerState.isRunning = false;
+        focusTimerState.endsAt = null;
+      } else {
+        if (focusTimerState.remaining <= 0) focusTimerState.remaining = focusTimerState.duration;
+        focusTimerState.isRunning = true;
+        focusTimerState.endsAt = Date.now() + focusTimerState.remaining * 1000;
+      }
+      saveFocusTimerState();
+      renderFocusTimer();
+      startFocusTicker();
+    }
+
+    function resetFocusTimer() {
+      focusTimerState.remaining = focusTimerState.duration;
+      focusTimerState.isRunning = false;
+      focusTimerState.endsAt = null;
+      clearInterval(focusTimerInterval);
+      focusTimerInterval = null;
+      saveFocusTimerState();
+      renderFocusTimer();
+    }
+
+    function chooseFocusDuration(minutes) {
+      focusTimerState = {
+        duration: minutes * 60,
+        remaining: minutes * 60,
+        isRunning: false,
+        endsAt: null
+      };
+      clearInterval(focusTimerInterval);
+      focusTimerInterval = null;
+      saveFocusTimerState();
+      renderFocusTimer();
     }
 
     function addChatMessage(role, message) {
@@ -1552,7 +1811,13 @@
       activeDayKey = "monday";
       setAppView("planner");
     });
+    document.getElementById("focusTab").addEventListener("click", () => setAppView("focus"));
     document.getElementById("chatTab").addEventListener("click", () => setAppView("chat"));
+    document.getElementById("timerStart").addEventListener("click", toggleFocusTimer);
+    document.getElementById("timerReset").addEventListener("click", resetFocusTimer);
+    document.querySelectorAll(".timer-preset").forEach(button => {
+      button.addEventListener("click", () => chooseFocusDuration(Number(button.dataset.minutes)));
+    });
     document.getElementById("chatForm").addEventListener("submit", event => {
       event.preventDefault();
       const input = document.getElementById("chatInput");
@@ -1629,6 +1894,8 @@
     }, 5000);
 
     render();
+    renderFocusTimer();
+    startFocusTicker();
     syncChatTasks();
 
     function refreshFromChatWhenAppReturns() {
@@ -1641,7 +1908,10 @@
     window.addEventListener("pageshow", refreshFromChatWhenAppReturns);
     window.addEventListener("focus", refreshFromChatWhenAppReturns);
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") refreshFromChatWhenAppReturns();
+      if (document.visibilityState === "visible") {
+        refreshFromChatWhenAppReturns();
+        renderFocusTimer();
+      }
     });
 
     let pullStartY = null;
