@@ -1,6 +1,6 @@
 {
-  "name": "Weekly To-Do",
-  "short_name": "To-Do",
+  "name": "nowy",
+  "short_name": "nowy",
   "description": "A private weekly planner with persistent checkboxes and simple add and delete controls.",
   "start_url": "./",
   "scope": "./",
