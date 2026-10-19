@@ -116,6 +116,23 @@
       color: var(--blue);
     }
 
+    .mode-switcher .chat-tab {
+      display: flex;
+      gap: 8px;
+      padding-right: 7px;
+    }
+
+    .chat-avatar {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #f1e6ff, #d8d8ff);
+      color: #5e44a8;
+      font-size: 15px;
+      place-items: center;
+    }
+
     .mode-switcher button:hover,
     .mode-switcher a:hover { background: var(--soft); }
 
@@ -288,6 +305,155 @@
       color: var(--muted);
       font-size: 13px;
     }
+
+    [hidden] { display: none !important; }
+
+    .chat-view {
+      display: flex;
+      min-height: calc(100vh - 92px - env(safe-area-inset-top));
+      padding: 18px 0 max(10px, env(safe-area-inset-bottom));
+      flex-direction: column;
+    }
+
+    .chat-thread {
+      display: flex;
+      width: min(760px, 100%);
+      margin: 0 auto;
+      padding: 28px 4px 120px;
+      flex: 1;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .chat-empty {
+      display: grid;
+      margin: auto;
+      padding: 90px 20px 40px;
+      place-items: center;
+      text-align: center;
+    }
+
+    .chat-illustration {
+      position: relative;
+      width: 122px;
+      height: 96px;
+      margin-bottom: 20px;
+    }
+
+    .chat-orb {
+      position: absolute;
+      left: 31px;
+      top: 24px;
+      display: grid;
+      width: 66px;
+      height: 56px;
+      border-radius: 44% 56% 48% 52%;
+      background: radial-gradient(circle at 62% 26%, #f6ddff, #ad8cff 48%, #7054cc 100%);
+      color: #fff;
+      box-shadow: 0 12px 30px rgba(111, 76, 196, .22);
+      font-size: 24px;
+      place-items: center;
+      transform: rotate(-6deg);
+    }
+
+    .chat-line {
+      position: absolute;
+      height: 22px;
+      border: 2px solid #4a474f;
+      border-color: #4a474f transparent transparent;
+      border-radius: 50%;
+    }
+
+    .chat-line.one { left: 0; top: 33px; width: 54px; transform: rotate(-55deg); }
+    .chat-line.two { right: 0; bottom: 1px; width: 58px; transform: rotate(13deg); }
+
+    .chat-empty h2 {
+      max-width: 330px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(24px, 4vw, 34px);
+      font-weight: 500;
+      line-height: 1.12;
+      letter-spacing: -.025em;
+    }
+
+    .chat-empty p {
+      max-width: 390px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .chat-message {
+      max-width: min(520px, 82%);
+      padding: 12px 15px;
+      border-radius: 18px;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .chat-message.user {
+      align-self: flex-end;
+      border-bottom-right-radius: 6px;
+      background: var(--ink);
+      color: var(--card);
+    }
+
+    .chat-message.assistant {
+      align-self: flex-start;
+      border-bottom-left-radius: 6px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .chat-composer-wrap {
+      position: sticky;
+      left: 0;
+      right: 0;
+      bottom: max(10px, env(safe-area-inset-bottom));
+      width: min(900px, 100%);
+      margin: 0 auto;
+      padding: 0 4px;
+    }
+
+    .chat-composer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 9px 8px 20px;
+      border: 1px solid rgba(23, 23, 26, .05);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 14px 42px rgba(41, 37, 48, .12);
+      backdrop-filter: blur(18px);
+    }
+
+    .chat-composer input {
+      width: 100%;
+      min-height: 44px;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 16px;
+    }
+
+    .chat-composer input::placeholder { color: #9b99a0; }
+
+    .chat-send {
+      min-height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--card);
+      font-weight: 750;
+    }
+
+    .chat-send:hover { transform: translateY(-1px); }
 
     .days { display: grid; }
 
@@ -650,7 +816,10 @@
       .app-header { grid-template-columns: 1fr auto; }
       .brand-mini { display: none; }
       .mode-switcher { justify-self: start; }
-      .mode-switcher button, .mode-switcher a { padding: 0 13px; }
+      .mode-switcher button, .mode-switcher a { padding: 0 11px; }
+      .mode-switcher .chat-tab { padding-right: 5px; }
+      .mode-switcher .chat-tab > span:first-child { display: none; }
+      .header-actions .round-action:first-child { display: none; }
       .day-intro { margin-top: 24px; }
       .week-calendar {
         grid-auto-flow: column;
@@ -663,6 +832,11 @@
       .quick-card { min-height: 112px; }
       .time-groups { grid-template-columns: 1fr; }
       .time-group:last-child:nth-child(odd) { grid-column: auto; max-width: none; }
+      .chat-view { min-height: calc(100vh - 82px - env(safe-area-inset-top)); }
+      .chat-thread { padding-top: 8px; padding-bottom: 104px; }
+      .chat-empty { padding-top: 48px; }
+      .chat-composer-wrap { padding: 0; }
+      .chat-composer { padding-left: 16px; }
     }
 
     @media print {
@@ -685,7 +859,11 @@
       <nav class="mode-switcher" aria-label="App sections">
         <button id="toDoTab" type="button">To-do</button>
         <button class="is-active" id="todayTab" type="button">Today</button>
-        <a href="./canvas.html">Canvas</a>
+        <a href="./canvas.html">Focus</a>
+        <button class="chat-tab" id="chatTab" type="button">
+          <span>Chat</span>
+          <span class="chat-avatar" aria-hidden="true">✦</span>
+        </button>
       </nav>
       <div class="header-actions">
         <button class="round-action" id="refreshButton" type="button" aria-label="Refresh tasks" data-tooltip="Refresh tasks">⋯</button>
@@ -693,42 +871,64 @@
       </div>
     </header>
 
-    <section class="day-intro">
-      <div>
-        <p class="eyebrow">Daily plan</p>
-        <h1 id="activeDayTitle">Monday</h1>
-        <p class="week-range" id="weekRange"></p>
+    <div id="plannerView">
+      <section class="day-intro">
+        <div>
+          <p class="eyebrow">Daily plan</p>
+          <h1 id="activeDayTitle">Monday</h1>
+          <p class="week-range" id="weekRange"></p>
+        </div>
+        <p class="month-jump" id="monthJump"></p>
+      </section>
+
+      <nav class="week-calendar" id="weekCalendar" aria-label="Week calendar"></nav>
+
+      <section class="quick-cards" aria-label="Quick actions">
+        <button class="quick-card" id="quickAddButton" type="button">
+          <span class="quick-icon" aria-hidden="true">+</span>
+          <span class="quick-label">Add a new to-do</span>
+          <span class="quick-detail">Choose a time and task</span>
+        </button>
+        <a class="quick-card" href="./canvas.html">
+          <span class="quick-icon" aria-hidden="true">⌗</span>
+          <span class="quick-label">Open your moodboard</span>
+          <span class="quick-detail">Images, notes and drawing</span>
+        </a>
+        <div class="quick-card">
+          <span class="quick-icon" aria-hidden="true">✓</span>
+          <span class="quick-label"><span id="remainingCount">0</span> tasks left today</span>
+          <span class="quick-detail" id="completedCount">0 completed</span>
+        </div>
+        <button class="quick-card" id="syncCard" type="button">
+          <span class="quick-icon" aria-hidden="true">↻</span>
+          <span class="quick-label">Chat sync is active</span>
+          <span class="quick-detail">Tap to check for new tasks</span>
+        </button>
+      </section>
+
+      <p class="note">Double-tap a task to edit it. Completed tasks stay until you delete them or a new week begins.</p>
+      <div class="days" id="days"></div>
+    </div>
+
+    <section class="chat-view" id="chatView" aria-label="To-do chat" hidden>
+      <div class="chat-thread" id="chatThread" aria-live="polite">
+        <div class="chat-empty" id="chatEmpty">
+          <div class="chat-illustration" aria-hidden="true">
+            <span class="chat-line one"></span>
+            <span class="chat-orb">✦</span>
+            <span class="chat-line two"></span>
+          </div>
+          <h2>Drop your to-dos here.<br>I’ll plan them out.</h2>
+          <p>Try “Add gym at 18:00 on Tuesday.” Tasks created here are saved instantly on this iPad.</p>
+        </div>
       </div>
-      <p class="month-jump" id="monthJump"></p>
-    </section>
-
-    <nav class="week-calendar" id="weekCalendar" aria-label="Week calendar"></nav>
-
-    <section class="quick-cards" aria-label="Quick actions">
-      <button class="quick-card" id="quickAddButton" type="button">
-        <span class="quick-icon" aria-hidden="true">+</span>
-        <span class="quick-label">Add a new to-do</span>
-        <span class="quick-detail">Choose a time and task</span>
-      </button>
-      <a class="quick-card" href="./canvas.html">
-        <span class="quick-icon" aria-hidden="true">⌗</span>
-        <span class="quick-label">Open your moodboard</span>
-        <span class="quick-detail">Images, notes and drawing</span>
-      </a>
-      <div class="quick-card">
-        <span class="quick-icon" aria-hidden="true">✓</span>
-        <span class="quick-label"><span id="remainingCount">0</span> tasks left today</span>
-        <span class="quick-detail" id="completedCount">0 completed</span>
+      <div class="chat-composer-wrap">
+        <form class="chat-composer" id="chatForm">
+          <input id="chatInput" type="text" maxlength="180" autocomplete="off" placeholder="What are today's plans?" aria-label="Tell the planner what to add">
+          <button class="chat-send" type="submit">Add</button>
+        </form>
       </div>
-      <button class="quick-card" id="syncCard" type="button">
-        <span class="quick-icon" aria-hidden="true">↻</span>
-        <span class="quick-label">Chat sync is active</span>
-        <span class="quick-detail">Tap to check for new tasks</span>
-      </button>
     </section>
-
-    <p class="note">Double-tap a task to edit it. Completed tasks stay until you delete them or a new week begins.</p>
-    <div class="days" id="days"></div>
   </main>
 
   <dialog id="taskDialog">
@@ -871,7 +1071,9 @@
 
     let state = loadState();
     let pendingTaskDeletion = null;
+    let pendingChatDraft = null;
     let toastTimer = null;
+    let currentView = "planner";
     let activeDayKey = (() => {
       const today = new Date().getDay();
       return today >= 1 && today <= 5 ? DAYS[today - 1].toLowerCase() : "monday";
@@ -1112,8 +1314,11 @@
       const index = activeIndex === -1 ? 0 : activeIndex;
       const todayIndex = new Date().getDay() - 1;
       const todayKey = todayIndex >= 0 && todayIndex < DAYS.length ? DAYS[todayIndex].toLowerCase() : "monday";
-      document.getElementById("todayTab").classList.toggle("is-active", activeDayKey === todayKey);
-      document.getElementById("toDoTab").classList.toggle("is-active", activeDayKey !== todayKey);
+      if (currentView === "planner") {
+        document.getElementById("todayTab").classList.toggle("is-active", activeDayKey === todayKey);
+        document.getElementById("toDoTab").classList.toggle("is-active", activeDayKey !== todayKey);
+        document.getElementById("chatTab").classList.remove("is-active");
+      }
       {
         const dayKey = dayName.toLowerCase();
         const dayDate = new Date(weekStart);
@@ -1204,6 +1409,130 @@
       openDialog(dayName.toLowerCase(), dayName, suggestedTime);
     }
 
+    function setAppView(view) {
+      currentView = view;
+      const isChat = view === "chat";
+      document.getElementById("plannerView").hidden = isChat;
+      document.getElementById("chatView").hidden = !isChat;
+      document.getElementById("chatTab").classList.toggle("is-active", isChat);
+      if (isChat) {
+        document.getElementById("todayTab").classList.remove("is-active");
+        document.getElementById("toDoTab").classList.remove("is-active");
+        requestAnimationFrame(() => document.getElementById("chatInput").focus());
+      } else {
+        render();
+      }
+    }
+
+    function addChatMessage(role, message) {
+      document.getElementById("chatEmpty").hidden = true;
+      const bubble = document.createElement("div");
+      bubble.className = `chat-message ${role}`;
+      bubble.textContent = message;
+      document.getElementById("chatThread").appendChild(bubble);
+      bubble.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
+
+    function parseClock(input) {
+      let match = input.match(/\bat\s+([0-2]?\d)(?::([0-5]\d))?\s*(am|pm)?\b/i);
+      let hour;
+      let minute;
+      let period;
+
+      if (match) {
+        hour = Number(match[1]);
+        minute = Number(match[2] || 0);
+        period = (match[3] || "").toLowerCase();
+      } else {
+        match = input.match(/\b([0-2]?\d):([0-5]\d)\s*(am|pm)?\b/i);
+        if (match) {
+          hour = Number(match[1]);
+          minute = Number(match[2]);
+          period = (match[3] || "").toLowerCase();
+        } else {
+          match = input.match(/\b([0-1]?\d)\s*(am|pm)\b/i);
+          if (!match) return null;
+          hour = Number(match[1]);
+          minute = 0;
+          period = match[2].toLowerCase();
+        }
+      }
+
+      if (period === "pm" && hour < 12) hour += 12;
+      if (period === "am" && hour === 12) hour = 0;
+      if (hour > 23 || minute > 59) return null;
+      return {
+        time: `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+        matchedText: match[0]
+      };
+    }
+
+    function parseChatTask(input) {
+      const clock = parseClock(input);
+      if (pendingChatDraft && clock) {
+        const result = { ...pendingChatDraft, time: clock.time };
+        pendingChatDraft = null;
+        return result;
+      }
+
+      const dayPatterns = [
+        { key: "monday", label: "Monday", regex: /\b(?:mon|monday)\b/i },
+        { key: "tuesday", label: "Tuesday", regex: /\b(?:tue|tues|tuesday|turesday)\b/i },
+        { key: "wednesday", label: "Wednesday", regex: /\b(?:wed|wednesday)\b/i },
+        { key: "thursday", label: "Thursday", regex: /\b(?:thu|thur|thurs|thursday)\b/i },
+        { key: "friday", label: "Friday", regex: /\b(?:fri|friday)\b/i }
+      ];
+      const explicitDay = dayPatterns.find(day => day.regex.test(input));
+      const actualTodayIndex = new Date().getDay() - 1;
+      const actualTodayKey = actualTodayIndex >= 0 && actualTodayIndex < DAYS.length
+        ? DAYS[actualTodayIndex].toLowerCase()
+        : "monday";
+      const dayKey = /\btoday\b/i.test(input) ? actualTodayKey : (explicitDay?.key || activeDayKey);
+      const dayName = DAYS.find(day => day.toLowerCase() === dayKey) || DAYS[0];
+
+      let text = input
+        .replace(/^\s*(?:please\s+)?(?:add|create|put|schedule)\s+/i, "")
+        .replace(/^\s*(?:a\s+)?(?:task|to-do|todo)\s+/i, "")
+        .replace(clock?.matchedText || /$a/, " ")
+        .replace(explicitDay?.regex || /$a/, " ")
+        .replace(/\btoday\b/i, " ")
+        .replace(/^\s*(?:for|on)\s+/i, "")
+        .replace(/\b(?:for|on)\s*$/i, "")
+        .replace(/^\s*(?:that\s+is|called)\s+/i, "")
+        .replace(/\s{2,}/g, " ")
+        .replace(/^[\s,.;:–—-]+|[\s,.;:–—-]+$/g, "")
+        .trim();
+
+      if (!text) return { error: "Tell me what the task should be. For example: “Gym at 18:00 on Tuesday.”" };
+      if (!clock) {
+        pendingChatDraft = { dayKey, dayName, text };
+        return { error: `What time should I use for “${text}” on ${dayName}?` };
+      }
+      return { dayKey, dayName, text, time: clock.time };
+    }
+
+    function addTaskFromChat(request) {
+      const tasks = state.days[request.dayKey] || (state.days[request.dayKey] = []);
+      const duplicate = tasks.some(task =>
+        task.time === request.time && task.text.toLowerCase() === request.text.toLowerCase()
+      );
+      if (duplicate) {
+        addChatMessage("assistant", `That task is already on ${request.dayName} at ${request.time}.`);
+        return;
+      }
+
+      tasks.push(makeTask(request.time, request.text));
+      tasks.sort((a, b) => a.time.localeCompare(b.time));
+      saveState();
+      render();
+
+      const weekStart = new Date(`${state.weekStart}T00:00:00`);
+      const dayIndex = DAYS.findIndex(day => day.toLowerCase() === request.dayKey);
+      weekStart.setDate(weekStart.getDate() + Math.max(0, dayIndex));
+      addChatMessage("assistant", `Added “${request.text}” for ${request.dayName}, ${shortDate(weekStart)} at ${request.time}.`);
+      showToast("Task added from chat");
+    }
+
     document.getElementById("globalAddButton").addEventListener("click", () => openForActiveDay());
     document.getElementById("quickAddButton").addEventListener("click", () => openForActiveDay());
     document.getElementById("syncCard").addEventListener("click", () => {
@@ -1217,11 +1546,26 @@
     document.getElementById("todayTab").addEventListener("click", () => {
       const todayIndex = new Date().getDay() - 1;
       activeDayKey = todayIndex >= 0 && todayIndex < DAYS.length ? DAYS[todayIndex].toLowerCase() : "monday";
-      render();
+      setAppView("planner");
     });
     document.getElementById("toDoTab").addEventListener("click", () => {
       activeDayKey = "monday";
-      render();
+      setAppView("planner");
+    });
+    document.getElementById("chatTab").addEventListener("click", () => setAppView("chat"));
+    document.getElementById("chatForm").addEventListener("submit", event => {
+      event.preventDefault();
+      const input = document.getElementById("chatInput");
+      const message = input.value.trim();
+      if (!message) return;
+      addChatMessage("user", message);
+      input.value = "";
+      const parsed = parseChatTask(message);
+      if (parsed.error) {
+        addChatMessage("assistant", parsed.error);
+        return;
+      }
+      addTaskFromChat(parsed);
     });
 
     form.addEventListener("submit", event => {
