@@ -310,6 +310,159 @@
 
     [hidden] { display: none !important; }
 
+    .notes-view {
+      min-height: calc(100vh - 92px - env(safe-area-inset-top));
+      padding: 34px 0 max(54px, env(safe-area-inset-bottom));
+    }
+
+    .notes-intro {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .notes-intro h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(40px, 6vw, 58px);
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+
+    .notes-description {
+      max-width: 500px;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .notes-add {
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--card);
+      font-weight: 750;
+      white-space: nowrap;
+    }
+
+    .notes-add:hover { transform: translateY(-1px); }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .note-card {
+      display: flex;
+      min-width: 0;
+      min-height: 250px;
+      padding: 20px;
+      border-radius: 22px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      flex-direction: column;
+      transition: box-shadow 140ms ease, transform 140ms ease;
+    }
+
+    .note-card:focus-within {
+      box-shadow: 0 14px 40px rgba(41, 37, 48, .12);
+      transform: translateY(-1px);
+    }
+
+    .note-title,
+    .note-body {
+      width: 100%;
+      padding: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .note-title {
+      margin-bottom: 12px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 23px;
+      font-weight: 500;
+      letter-spacing: -.025em;
+    }
+
+    .note-title::placeholder,
+    .note-body::placeholder { color: #aaa8ad; }
+
+    .note-body {
+      min-height: 138px;
+      overflow: hidden;
+      resize: none;
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .note-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .note-saved {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .note-delete {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      color: var(--muted);
+      place-items: center;
+    }
+
+    .note-delete:hover { background: #fff0f0; color: var(--danger); }
+
+    .note-delete svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .notes-empty {
+      display: grid;
+      min-height: 300px;
+      padding: 40px 20px;
+      border: 1px dashed #dedce1;
+      border-radius: 24px;
+      color: var(--muted);
+      background: rgba(255,255,255,.42);
+      place-items: center;
+      text-align: center;
+    }
+
+    .notes-empty strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+      font-weight: 500;
+    }
+
     .focus-view {
       position: relative;
       left: 50%;
@@ -986,6 +1139,11 @@
       .focus-view { min-height: calc(100vh - 74px - env(safe-area-inset-top)); padding: 24px 14px; }
       .focus-panel { padding: 12px; transform: translateY(-1vh); }
       .timer-ring { width: min(76vw, 320px); }
+      .notes-view { padding-top: 26px; }
+      .notes-intro { align-items: start; margin-bottom: 22px; }
+      .notes-add { min-height: 44px; padding: 0 15px; }
+      .notes-grid { grid-template-columns: 1fr; }
+      .note-card { min-height: 220px; }
     }
 
     @media print {
@@ -1006,7 +1164,7 @@
         <span>nowy</span>
       </div>
       <nav class="mode-switcher" aria-label="App sections">
-        <button id="toDoTab" type="button">To-do</button>
+        <button id="notesTab" type="button">Notes</button>
         <button class="is-active" id="todayTab" type="button">Today</button>
         <button id="focusTab" type="button">Focus</button>
         <a class="canvas-tab" href="./canvas.html">Canvas</a>
@@ -1020,6 +1178,21 @@
         <button class="round-action" id="globalAddButton" type="button" aria-label="Add a to-do" data-tooltip="Add a to-do">+</button>
       </div>
     </header>
+
+    <section class="notes-view" id="notesView" aria-label="Notes" hidden>
+      <div class="notes-intro">
+        <div>
+          <p class="eyebrow">Your space</p>
+          <h1>Notes</h1>
+          <p class="notes-description">Write down ideas, thoughts, and anything you want to keep nearby. Every change saves automatically on this device.</p>
+        </div>
+        <button class="notes-add" id="addNoteButton" type="button">+ New note</button>
+      </div>
+      <div class="notes-empty" id="notesEmpty" hidden>
+        <div><strong>No notes yet</strong><span>Create your first note whenever something comes to mind.</span></div>
+      </div>
+      <div class="notes-grid" id="notesGrid"></div>
+    </section>
 
     <div id="plannerView">
       <section class="day-intro">
@@ -1250,6 +1423,8 @@
     let pendingChatDraft = null;
     let toastTimer = null;
     let currentView = "planner";
+    const NOTES_STORAGE_KEY = "nowy-notes-v1";
+    let notes = loadNotes();
     const FOCUS_STORAGE_KEY = "weekly-todo-focus-v2";
     let focusTimerInterval = null;
     let focusTimerState = loadFocusTimerState();
@@ -1260,6 +1435,117 @@
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function loadNotes() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY));
+        return Array.isArray(saved) ? saved : [];
+      } catch (_) {
+        return [];
+      }
+    }
+
+    function saveNotes() {
+      localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notes));
+    }
+
+    function resizeNoteBody(textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = Math.max(138, textarea.scrollHeight) + "px";
+    }
+
+    function noteSavedLabel(timestamp) {
+      if (!timestamp) return "Saved";
+      return "Saved " + new Intl.DateTimeFormat("en-GB", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(timestamp));
+    }
+
+    function renderNotes(focusId = null) {
+      const grid = document.getElementById("notesGrid");
+      const empty = document.getElementById("notesEmpty");
+      grid.replaceChildren();
+      empty.hidden = notes.length > 0;
+
+      notes.forEach(note => {
+        const card = document.createElement("article");
+        card.className = "note-card";
+        card.dataset.noteId = note.id;
+
+        const title = document.createElement("input");
+        title.className = "note-title";
+        title.type = "text";
+        title.maxLength = 80;
+        title.value = note.title || "";
+        title.placeholder = "Note title";
+        title.setAttribute("aria-label", "Note title");
+
+        const body = document.createElement("textarea");
+        body.className = "note-body";
+        body.maxLength = 4000;
+        body.value = note.body || "";
+        body.placeholder = "Start writing…";
+        body.setAttribute("aria-label", "Note text");
+
+        const footer = document.createElement("footer");
+        footer.className = "note-card-footer";
+        const saved = document.createElement("span");
+        saved.className = "note-saved";
+        saved.textContent = noteSavedLabel(note.updatedAt);
+
+        const remove = document.createElement("button");
+        remove.className = "note-delete";
+        remove.type = "button";
+        remove.setAttribute("aria-label", `Delete ${note.title || "note"}`);
+        remove.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="m6 7 1 13h10l1-13"></path><path d="M10 11v5M14 11v5"></path></svg>';
+
+        const update = () => {
+          note.title = title.value;
+          note.body = body.value;
+          note.updatedAt = Date.now();
+          saveNotes();
+          saved.textContent = "Saved just now";
+        };
+
+        title.addEventListener("input", update);
+        body.addEventListener("input", () => {
+          resizeNoteBody(body);
+          update();
+        });
+        remove.addEventListener("click", () => {
+          notes = notes.filter(candidate => candidate.id !== note.id);
+          saveNotes();
+          renderNotes();
+          showToast("Note deleted");
+        });
+
+        footer.append(saved, remove);
+        card.append(title, body, footer);
+        grid.appendChild(card);
+        resizeNoteBody(body);
+      });
+
+      if (focusId) {
+        requestAnimationFrame(() => grid.querySelector(`[data-note-id="${focusId}"] .note-title`)?.focus());
+      }
+    }
+
+    function addNote() {
+      const note = {
+        id: `note-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        title: "",
+        body: "",
+        createdAt: Date.now(),
+        updatedAt: Date.now()
+      };
+      notes.unshift(note);
+      saveNotes();
+      renderNotes(note.id);
+      showToast("New note created");
     }
 
     function showToast(message) {
@@ -1494,8 +1780,8 @@
       const todayIndex = new Date().getDay() - 1;
       const todayKey = todayIndex >= 0 && todayIndex < DAYS.length ? DAYS[todayIndex].toLowerCase() : "monday";
       if (currentView === "planner") {
-        document.getElementById("todayTab").classList.toggle("is-active", activeDayKey === todayKey);
-        document.getElementById("toDoTab").classList.toggle("is-active", activeDayKey !== todayKey);
+        document.getElementById("todayTab").classList.add("is-active");
+        document.getElementById("notesTab").classList.remove("is-active");
         document.getElementById("focusTab").classList.remove("is-active");
         document.getElementById("chatTab").classList.remove("is-active");
       }
@@ -1593,21 +1879,31 @@
       currentView = view;
       const isChat = view === "chat";
       const isFocus = view === "focus";
-      document.getElementById("plannerView").hidden = isChat || isFocus;
+      const isNotes = view === "notes";
+      document.getElementById("plannerView").hidden = isChat || isFocus || isNotes;
+      document.getElementById("notesView").hidden = !isNotes;
       document.getElementById("focusView").hidden = !isFocus;
       document.getElementById("chatView").hidden = !isChat;
+      document.getElementById("notesTab").classList.toggle("is-active", isNotes);
       document.getElementById("chatTab").classList.toggle("is-active", isChat);
       document.getElementById("focusTab").classList.toggle("is-active", isFocus);
+      document.getElementById("globalAddButton").setAttribute("aria-label", isNotes ? "Add a note" : "Add a to-do");
+      document.getElementById("globalAddButton").dataset.tooltip = isNotes ? "Add a note" : "Add a to-do";
       if (isChat) {
         document.getElementById("todayTab").classList.remove("is-active");
-        document.getElementById("toDoTab").classList.remove("is-active");
+        document.getElementById("notesTab").classList.remove("is-active");
         document.getElementById("focusTab").classList.remove("is-active");
         requestAnimationFrame(() => document.getElementById("chatInput").focus());
       } else if (isFocus) {
         document.getElementById("todayTab").classList.remove("is-active");
-        document.getElementById("toDoTab").classList.remove("is-active");
+        document.getElementById("notesTab").classList.remove("is-active");
         document.getElementById("chatTab").classList.remove("is-active");
         renderFocusTimer();
+      } else if (isNotes) {
+        document.getElementById("todayTab").classList.remove("is-active");
+        document.getElementById("focusTab").classList.remove("is-active");
+        document.getElementById("chatTab").classList.remove("is-active");
+        renderNotes();
       } else {
         render();
       }
@@ -1834,7 +2130,11 @@
       showToast("Task added from chat");
     }
 
-    document.getElementById("globalAddButton").addEventListener("click", () => openForActiveDay());
+    document.getElementById("globalAddButton").addEventListener("click", () => {
+      if (currentView === "notes") addNote();
+      else openForActiveDay();
+    });
+    document.getElementById("addNoteButton").addEventListener("click", addNote);
     document.getElementById("quickAddButton").addEventListener("click", () => openForActiveDay());
     document.getElementById("syncCard").addEventListener("click", () => {
       showToast("Checking for new tasks");
@@ -1849,10 +2149,7 @@
       activeDayKey = todayIndex >= 0 && todayIndex < DAYS.length ? DAYS[todayIndex].toLowerCase() : "monday";
       setAppView("planner");
     });
-    document.getElementById("toDoTab").addEventListener("click", () => {
-      activeDayKey = "monday";
-      setAppView("planner");
-    });
+    document.getElementById("notesTab").addEventListener("click", () => setAppView("notes"));
     document.getElementById("focusTab").addEventListener("click", () => setAppView("focus"));
     document.getElementById("chatTab").addEventListener("click", () => setAppView("chat"));
     document.getElementById("timerStart").addEventListener("click", toggleFocusTimer);
@@ -1936,16 +2233,14 @@
     }, 5000);
 
     render();
+    renderNotes();
     renderFocusTimer();
     startFocusTicker();
     syncChatTasks();
 
     const requestedView = new URLSearchParams(window.location.search).get("view");
-    if (requestedView === "focus" || requestedView === "chat") {
-      setAppView(requestedView);
-    } else if (requestedView === "todo") {
-      activeDayKey = "monday";
-      setAppView("planner");
+    if (requestedView === "focus" || requestedView === "chat" || requestedView === "notes" || requestedView === "todo") {
+      setAppView(requestedView === "todo" ? "notes" : requestedView);
     } else if (requestedView === "today") {
       const todayIndex = new Date().getDay() - 1;
       activeDayKey = todayIndex >= 0 && todayIndex < DAYS.length ? DAYS[todayIndex].toLowerCase() : "monday";
