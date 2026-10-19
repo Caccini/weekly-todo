@@ -62,12 +62,12 @@
     .shell {
       width: min(1080px, calc(100% - 40px));
       margin: 0 auto;
-      padding: max(18px, env(safe-area-inset-top)) 0 max(48px, env(safe-area-inset-bottom));
+      padding: max(18px, env(safe-area-inset-top)) 0 max(116px, calc(env(safe-area-inset-bottom) + 92px));
     }
 
     .app-header {
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: 1fr auto;
       align-items: center;
       gap: 18px;
       min-height: 54px;
@@ -90,6 +90,10 @@
     }
 
     .mode-switcher {
+      position: fixed;
+      z-index: 40;
+      left: 50%;
+      bottom: max(18px, env(safe-area-inset-bottom));
       display: flex;
       align-items: center;
       gap: 3px;
@@ -97,6 +101,9 @@
       border-radius: 999px;
       background: rgba(255, 255, 255, .92);
       box-shadow: 0 8px 30px rgba(48, 44, 54, .08);
+      transform: translateX(-50%);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
     }
 
     .mode-switcher button,
@@ -140,6 +147,7 @@
 
     .header-actions {
       display: flex;
+      grid-column: 2;
       justify-content: flex-end;
       gap: 8px;
     }
@@ -617,7 +625,7 @@
       display: flex;
       width: min(760px, 100%);
       margin: 0 auto;
-      padding: 28px 4px 120px;
+      padding: 28px 4px 184px;
       flex: 1;
       flex-direction: column;
       justify-content: flex-end;
@@ -710,7 +718,7 @@
       position: sticky;
       left: 0;
       right: 0;
-      bottom: max(10px, env(safe-area-inset-bottom));
+      bottom: max(88px, calc(env(safe-area-inset-bottom) + 76px));
       width: min(900px, 100%);
       margin: 0 auto;
       padding: 0 4px;
@@ -1053,7 +1061,7 @@
       position: fixed;
       z-index: 30;
       left: 50%;
-      bottom: max(18px, env(safe-area-inset-bottom));
+      bottom: max(88px, calc(env(safe-area-inset-bottom) + 76px));
       max-width: calc(100% - 32px);
       padding: 10px 14px;
       border: 1px solid var(--ink);
@@ -1113,12 +1121,14 @@
       .shell { width: min(100% - 24px, 1080px); }
       .app-header { grid-template-columns: 1fr auto; }
       .brand-mini { display: none; }
-      .mode-switcher { justify-self: start; }
-      .mode-switcher button, .mode-switcher a { padding: 0 9px; font-size: 14px; }
+      .mode-switcher {
+        width: min(480px, calc(100% - 24px));
+        justify-content: center;
+      }
+      .mode-switcher button, .mode-switcher a { min-width: 0; padding: 0 9px; flex: 1; font-size: 14px; }
       .mode-switcher .canvas-tab { padding-inline: 9px; }
       .mode-switcher .chat-tab { padding-right: 5px; }
       .mode-switcher .chat-tab > span:first-child { display: none; }
-      .header-actions .round-action:first-child { display: none; }
       .day-intro { margin-top: 24px; }
       .week-calendar {
         grid-auto-flow: column;
@@ -1132,11 +1142,11 @@
       .time-groups { grid-template-columns: 1fr; }
       .time-group:last-child:nth-child(odd) { grid-column: auto; max-width: none; }
       .chat-view { min-height: calc(100vh - 82px - env(safe-area-inset-top)); }
-      .chat-thread { padding-top: 8px; padding-bottom: 104px; }
+      .chat-thread { padding-top: 8px; padding-bottom: 184px; }
       .chat-empty { padding-top: 48px; }
       .chat-composer-wrap { padding: 0; }
       .chat-composer { padding-left: 16px; }
-      .focus-view { min-height: calc(100vh - 74px - env(safe-area-inset-top)); padding: 24px 14px; }
+      .focus-view { min-height: calc(100vh - 74px - env(safe-area-inset-top)); padding: 24px 14px 110px; }
       .focus-panel { padding: 12px; transform: translateY(-1vh); }
       .timer-ring { width: min(76vw, 320px); }
       .notes-view { padding-top: 26px; }
@@ -1164,8 +1174,8 @@
         <span>nowy</span>
       </div>
       <nav class="mode-switcher" aria-label="App sections">
-        <button id="notesTab" type="button">Notes</button>
         <button class="is-active" id="todayTab" type="button">Today</button>
+        <button id="notesTab" type="button">Notes</button>
         <button id="focusTab" type="button">Focus</button>
         <a class="canvas-tab" href="./canvas.html">Canvas</a>
         <button class="chat-tab" id="chatTab" type="button">
